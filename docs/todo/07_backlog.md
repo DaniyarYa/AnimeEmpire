@@ -64,6 +64,20 @@
 - [ ] **BL-700** • Adaptive music layers
 - [ ] **BL-703** • NPC voice samples ("yatta!", "tasukatta")
 
+## Графика / шейдеры
+
+- [ ] **BL-800** • Toon / cel-shader для персонажей и зданий
+  - Кастомный ShaderMaterial с stepped lighting + rim light
+  - Compatible с GL Compatibility renderer
+  - Применять к Skeleton3D/MeshInstance3D через override material
+- [ ] **BL-801** • Outline на персонажах (anime-style)
+  - Вариант 1: дублированный mesh с inverted normals + чёрный материал
+  - Вариант 2: post-process edge detection (тяжелее на мобиле)
+- [ ] **BL-802** • Stylized rim-light на NPC
+- [ ] **BL-803** • Color grading / post-process под аниме-палитру
+  - Тёплая палитра, мягкий contrast
+- [ ] **BL-804** • Грубое stylized освещение зданий (без realistic shadows)
+
 ## Hotfix queue
 
 > Здесь — задачи, которые срочно нужны для текущей prod-версии. Перебивают спринт-приоритет.

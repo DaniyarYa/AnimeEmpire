@@ -11,6 +11,7 @@ const UPGRADE_COST_GROWTH := 1.5
 
 @onready var _building: Area3D = $Building
 @onready var _building_mesh: MeshInstance3D = $Building/Mesh
+@onready var _avatar: Node3D = $Avatar
 @onready var _gold_label: Label = $HUD/TopPanel/VBox/GoldLabel
 @onready var _mult_label: Label = $HUD/TopPanel/VBox/MultLabel
 @onready var _upgrade_button: Button = $HUD/BottomPanel/UpgradeButton
@@ -24,6 +25,36 @@ func _ready() -> void:
 	_building.input_event.connect(_on_building_input)
 	_upgrade_button.pressed.connect(_on_upgrade_pressed)
 	_refresh_hud()
+	_start_avatar_idle()
+
+
+const AVATAR_ANIM_SPEED := 2.0
+
+
+func _start_avatar_idle() -> void:
+	if _avatar == null:
+		return
+	var anim_player := _find_anim_player(_avatar)
+	if anim_player == null:
+		push_warning("[World] AnimationPlayer не найден в Avatar")
+		return
+	var anims := anim_player.get_animation_list()
+	if anims.is_empty():
+		push_warning("[World] нет анимаций в Avatar")
+		return
+	print("[World] avatar animations: ", anims)
+	anim_player.speed_scale = AVATAR_ANIM_SPEED
+	anim_player.play(anims[0])
+
+
+func _find_anim_player(node: Node) -> AnimationPlayer:
+	if node is AnimationPlayer:
+		return node
+	for child in node.get_children():
+		var found := _find_anim_player(child)
+		if found != null:
+			return found
+	return null
 
 
 func _on_building_input(_camera: Node, event: InputEvent, click_pos: Vector3, _normal: Vector3, _idx: int) -> void:

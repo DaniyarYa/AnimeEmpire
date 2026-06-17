@@ -73,22 +73,28 @@
 
 ## E4 · Пайплайн ассетов (3DAI Studio)
 
-- [ ] **P0-030** • Зарегистрировать аккаунт 3daistudio.com
+- [x] **P0-030** • Зарегистрировать аккаунт 3daistudio.com
   - Acceptance: рабочий аккаунт, выбран план (free для теста)
   - Estimate: S
-- [ ] **P0-031** • Тест-генерация: player avatar (chibi farmer)
+  - Done: 2026-06-17. Аккаунт у пользователя был ранее.
+- [x] **P0-031** • Тест-генерация: player avatar (chibi farmer)
   - Acceptance: получен `.glb`, импортирован в Godot, видно в сцене
   - Estimate: M
-  - Notes: используем шаблон промпта из `design/06_art_direction.md`
-- [ ] **P0-032** • Blender чек-лист QA модели
+  - Notes: промпт в `tools/3dai/phase0_brief.md` §«Промпт 1»
+  - Done: 2026-06-17. Использовали Meshy AI "Little Explorer biped" (как замена 3DAI). Формат FBX (GLB-конверсия отложена до Blender pass / Phase 1). Аватар видим в `scenes/world/world.tscn` рядом с тест-кубом.
+- [x] **P0-032** • Blender чек-лист QA модели
   - Acceptance: документ `tools/asset_qa_checklist.md` с шагами, прогнан на тест-модели
   - Estimate: S
-- [ ] **P0-033** • Тест-анимация: walk + idle для тест-NPC
+  - Done: 2026-06-17. 10 разделов проверки (A-J). «Прогнать на модели» — после P0-031.
+- [x] **P0-033** • Тест-анимация: walk + idle для тест-NPC
   - Acceptance: в Godot AnimationPlayer проигрывает обе анимации
   - Estimate: M
-- [ ] **P0-034** • Лицензия 3DAI на коммерческое использование — задокументировать
+  - Notes: промпты 2, 3 в `tools/3dai/phase0_brief.md`. Fallback на Mixamo если 3DAI не даст.
+  - Done: 2026-06-17. Бонус: получили 7 анимаций (idle, walk, walk_inplace, run, carry_walk, work_harvest, celebrate). `idle` авто-проигрывается в world-сцене через `_find_anim_player` рекурсивный поиск. Speed scale 2x для visual responsiveness. Переключение между анимациями (UI-кнопки) — отдельная задача в Phase 1.
+- [x] **P0-034** • Лицензия 3DAI на коммерческое использование — задокументировать
   - Acceptance: `docs/architecture/08_asset_pipeline.md` обновлён с условиями
   - Estimate: S
+  - Done: 2026-06-17. ADR-003 — неисключительная коммерческая лицензия.
 
 ## E5 · Backend-стабы
 

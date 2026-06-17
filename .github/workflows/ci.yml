@@ -1,0 +1,113 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  GODOT_VERSION: "4.3"
+  GODOT_PROJECT_PATH: godot
+
+jobs:
+  lint:
+    name: Lint GDScript
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          lfs: false
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install gdtoolkit
+        run: pip install gdtoolkit==4.*
+
+      - name: Run gdlint
+        run: |
+          if find ${{ env.GODOT_PROJECT_PATH }} -name "*.gd" -not -path "*/addons/*" | grep -q .; then
+            gdlint ${{ env.GODOT_PROJECT_PATH }} --exclude=${{ env.GODOT_PROJECT_PATH }}/addons
+          else
+            echo "No .gd files yet — skipping lint."
+          fi
+
+      - name: Run gdformat (check only)
+        run: |
+          if find ${{ env.GODOT_PROJECT_PATH }} -name "*.gd" -not -path "*/addons/*" | grep -q .; then
+            gdformat --check ${{ env.GODOT_PROJECT_PATH }}
+          else
+            echo "No .gd files yet — skipping format check."
+          fi
+
+  import-check:
+    name: Godot import check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Cache Godot imported files
+        uses: actions/cache@v4
+        with:
+          path: |
+            ${{ env.GODOT_PROJECT_PATH }}/.godot/imported
+          key: godot-import-${{ hashFiles(format('{0}/**', env.GODOT_PROJECT_PATH)) }}
+          restore-keys: |
+            godot-import-
+
+      - name: Download Godot
+        run: |
+          wget -q "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip" -O godot.zip
+          unzip -q godot.zip
+          mv "Godot_v${GODOT_VERSION}-stable_linux.x86_64" godot
+          chmod +x godot
+
+      - name: Import project (headless)
+        run: |
+          ./godot --headless --path ${{ env.GODOT_PROJECT_PATH }} --import || true
+          # Re-run to surface late errors
+          ./godot --headless --path ${{ env.GODOT_PROJECT_PATH }} --import
+
+      - name: Verify no import errors
+        run: |
+          if [ -f ${{ env.GODOT_PROJECT_PATH }}/.godot/imported/error.log ]; then
+            cat ${{ env.GODOT_PROJECT_PATH }}/.godot/imported/error.log
+            exit 1
+          fi
+
+  test:
+    name: Unit tests (gdUnit4)
+    runs-on: ubuntu-latest
+    needs: [import-check]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Skip until tests exist
+        run: |
+          if [ -z "$(find ${{ env.GODOT_PROJECT_PATH }}/tests -name '*.gd' 2>/dev/null)" ]; then
+            echo "No tests yet — skipping. Will activate after P0-050."
+            exit 0
+          fi
+          echo "Tests found — implement runner here (P0-051)."
+
+  yaml-lint:
+    name: YAML lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: false
+      - name: Install yamllint
+        run: pip install yamllint
+      - name: Lint workflow files
+        run: yamllint -d "{extends: relaxed, rules: {line-length: disable}}" .github/

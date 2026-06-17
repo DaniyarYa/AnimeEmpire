@@ -1,0 +1,67 @@
+# ─── Godot 4 ───────────────────────────────────────────────────────────
+godot/.godot/
+godot/.import/
+godot/*.import
+godot/export.cfg
+godot/.tmp/
+godot/builds/
+godot/android/build/
+godot/android/.gradle/
+godot/ios/.xcode/
+godot/logs/
+
+# Godot generated files (per-user)
+godot/*.translation
+godot/.gdignore
+
+# ─── Secrets / local config (никогда не коммитим) ───────────────────────
+*.env
+.env.*
+godot/.env
+godot/export_credentials.cfg
+godot/secrets/
+godot/android/keystores/*.keystore
+godot/android/release.keystore
+**/firebase-config-prod.json
+**/google-services-prod.json
+**/GoogleService-Info-prod.plist
+tools/secrets/
+
+# ─── macOS ──────────────────────────────────────────────────────────────
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+._*
+.Spotlight-V100
+.Trashes
+
+# ─── Editors / IDE ──────────────────────────────────────────────────────
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.cache/
+
+# ─── Build / temp ───────────────────────────────────────────────────────
+*.log
+*.tmp
+build/
+dist/
+tmp/
+
+# ─── Python (tools/) ────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+*.egg-info/
+
+# ─── Node (если будет CI tooling) ───────────────────────────────────────
+node_modules/
+
+# ─── Blender backups ────────────────────────────────────────────────────
+*.blend1
+*.blend2

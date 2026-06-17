@@ -19,6 +19,20 @@ config/description="Idle-tycoon в аниме-стиле. Mobile-first."
 config/version="0.0.1"
 config/features=PackedStringArray("4.6", "GL Compatibility")
 config/icon="res://icon.svg"
+run/main_scene="res://scenes/boot/boot.tscn"
+
+[autoload]
+
+EventBus="*res://autoload/event_bus.gd"
+Localization="*res://autoload/localization.gd"
+RemoteConfig="*res://autoload/remote_config.gd"
+SaveService="*res://autoload/save_service.gd"
+EconomySim="*res://autoload/economy_sim.gd"
+NPCSystem="*res://autoload/npc_system.gd"
+AnalyticsBus="*res://autoload/analytics_bus.gd"
+MonetizationService="*res://autoload/monetization_service.gd"
+GameState="*res://autoload/game_state.gd"
+SceneRouter="*res://autoload/scene_router.gd"
 
 [display]
 
@@ -27,6 +41,10 @@ window/size/viewport_height=1920
 window/stretch/mode="canvas_items"
 window/stretch/aspect="keep_height"
 window/handheld/orientation=1
+
+[gui]
+
+theme/custom="res://themes/main.theme.tres"
 
 [dotnet]
 

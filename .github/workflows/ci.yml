@@ -9,6 +9,7 @@ on:
 env:
   GODOT_VERSION: "4.3"
   GODOT_PROJECT_PATH: godot
+  GODOT_BIN: ./godot-bin
 
 jobs:
   lint:
@@ -83,7 +84,7 @@ jobs:
           fi
 
   test:
-    name: Unit tests (gdUnit4)
+    name: Unit tests
     runs-on: ubuntu-latest
     needs: [import-check]
     steps:
@@ -92,13 +93,27 @@ jobs:
         with:
           lfs: true
 
-      - name: Skip until tests exist
+      - name: Cache Godot imported files
+        uses: actions/cache@v4
+        with:
+          path: |
+            ${{ env.GODOT_PROJECT_PATH }}/.godot/imported
+          key: godot-import-${{ hashFiles(format('{0}/**', env.GODOT_PROJECT_PATH)) }}
+          restore-keys: |
+            godot-import-
+
+      - name: Download Godot
         run: |
-          if [ -z "$(find ${{ env.GODOT_PROJECT_PATH }}/tests -name '*.gd' 2>/dev/null)" ]; then
-            echo "No tests yet — skipping. Will activate after P0-050."
-            exit 0
-          fi
-          echo "Tests found — implement runner here (P0-051)."
+          wget -q "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip" -O godot.zip
+          unzip -q godot.zip
+          mv "Godot_v${GODOT_VERSION}-stable_linux.x86_64" godot-bin
+          chmod +x godot-bin
+
+      - name: Run test runner
+        run: |
+          # Импорт нужен перед запуском тестов, чтобы все ресурсы были готовы.
+          ./godot-bin --headless --path ${{ env.GODOT_PROJECT_PATH }} --import || true
+          ./godot-bin --headless --path ${{ env.GODOT_PROJECT_PATH }} --script res://tests/test_runner.gd
 
   yaml-lint:
     name: YAML lint

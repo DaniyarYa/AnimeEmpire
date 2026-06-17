@@ -111,22 +111,26 @@
 
 ## E6 · Тестирование
 
-- [ ] **P0-050** • Настроить gdUnit4 / gut
+- [x] **P0-050** • Настроить gdUnit4 / gut
   - Acceptance: запускается `make test` (или эквивалент), 1 sample-тест проходит
   - Estimate: S
-- [ ] **P0-051** • CI запускает тесты в PR
+  - Done: 2026-06-17. Собственный минимальный test runner `godot/tests/test_runner.gd` (без зависимостей). 2 sample-файла: `test_smoke.gd` (arithmetic, string, array, dict — 4 теста) + `test_save_state_schema.gd` (структура _new_state — 4 теста). `make test` запускает. Полноценный gdUnit4 — P2-121.
+- [x] **P0-051** • CI запускает тесты в PR
   - Acceptance: GitHub Actions показывает зелёный
   - Estimate: S
   - Depends on: P0-005, P0-050
+  - Done: 2026-06-17. Job `test` в `.github/workflows/ci.yml` качает Godot 4.3 Linux, импортирует проект, запускает test runner. Зависит от import-check.
 
 ## E7 · Документация и онбординг
 
-- [ ] **P0-060** • CONTRIBUTING.md
+- [x] **P0-060** • CONTRIBUTING.md
   - Acceptance: гайд для нового разработчика: clone, install, run
   - Estimate: S
-- [ ] **P0-061** • Локальный setup-скрипт (`tools/bootstrap.sh`)
+  - Done: 2026-06-17. 13 разделов: стек, setup, daily commands, структура, workflow, типичные ошибки, конвенции, asset pipeline, билды, лицензия.
+- [x] **P0-061** • Локальный setup-скрипт (`tools/bootstrap.sh`)
   - Acceptance: проверяет Godot version, LFS, открывает проект
   - Estimate: S
+  - Done: 2026-06-17. `tools/bootstrap.sh`: проверки git/git-lfs/Godot/Python/gdtoolkit/Blender/make, цветной output, инструкции install по OS (macOS/Linux/Windows), exit codes для CI.
 
 ## Итого Phase 0
 

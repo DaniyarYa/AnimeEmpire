@@ -107,7 +107,9 @@ NPC (CharacterBody3D, npc.gd)
 ```
 
 ### Игрок
-То же, что NPC, но с тач-управлением через `PlayerInput` (Control-узел).
+То же, что NPC, но с управлением через `VirtualJoystick` widget (см. `09_ui_architecture.md` §Input). Сигнал `direction_changed(Vector2)` от джойстика → `Player.set_movement_direction(dir)` → `CharacterBody3D.velocity = dir * stats.speed`.
+
+Когда `direction == Vector2.ZERO` (палец отпущен / dead zone) — игрок останавливается, переключается на idle. Когда есть движение — играет walk-анимация. Если зажат боковой кнопкой sprint (или в settings) — run.
 
 ## Тик симуляции
 

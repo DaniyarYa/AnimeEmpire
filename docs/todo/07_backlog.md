@@ -16,7 +16,7 @@
 ## UX улучшения
 
 - [ ] **BL-100** • Auto-tap режим
-- [ ] **BL-101** • Landscape mode для tablets
+- [ ] **BL-101** • Portrait fallback для очень узких phone-экранов (если будет нужно)
 - [ ] **BL-102** • Гайд по престижу (in-app tutorial при первом)
 - [ ] **BL-103** • Quick-stats виджет (сколько gold/min прямо сейчас)
 - [ ] **BL-104** • Customizable HUD layout

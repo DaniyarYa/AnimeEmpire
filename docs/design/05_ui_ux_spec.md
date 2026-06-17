@@ -15,28 +15,33 @@
 7. **Prestige** (Phase 2) — превью + ветки
 8. **Events** (Phase 5) — активные ивенты
 
-## Главный экран (World HUD)
+## Главный экран (World HUD, landscape 1920×1080)
 
 ```
-┌────────────────────────────────────────────┐
-│ 1234g   💎50   ⏱ NEXT 12:34   ⚙️         │ ← top bar
-│ ▰▰▰▰▰▱▱▱  Lv 5  280/500 XP                │ ← progress (под top bar)
-│                                            │
-│                                            │
-│                                            │
-│             [ 3D WORLD VIEW ]              │
-│                                            │
-│        🌾farm   🏭mill   🏪market           │
-│              (NPC walking)                 │
-│                                            │
-│                                            │
-│                              ┌──────────┐  │
-│                              │ +10 gold │  │ ← floating text
-│                              └──────────┘  │
-├────────────────────────────────────────────┤
-│ [Shop] [NPCs] [Upgr.] [Events] [Menu]      │ ← bottom action bar
-└────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────────────┐
+│ 1234g   💎50   Lv 5  ▰▰▰▰▰▱▱▱ 280/500              [Menu] [⚙]         │ ← top bar
+├──────────────────────────────────────────────────────────────────────────┤
+│                                                                          │
+│                                                          ┌────────────┐ │
+│                                                          │ 🛒 Shop    │ │
+│                                                          │ 👥 NPCs    │ │ ← right
+│              [ 3D WORLD VIEW ]                           │ ⬆ Upgrades │ │   action
+│                                                          │ 🎁 Events  │ │   panel
+│        🌾farm   🏭mill   🏪market                         │ ⭐ Daily   │ │
+│              (NPC walking)                               └────────────┘ │
+│                                                                          │
+│                                              ┌──────────┐                │
+│                                              │ +10 gold │                │ ← floating
+│                                              └──────────┘                │
+│      ◯                                                                   │
+│     ◯◯  ← virtual joystick (динамический)                               │
+│      ◯                                                                   │
+└──────────────────────────────────────────────────────────────────────────┘
 ```
+
+- Joystick активируется в левой 1/3 экрана (вне UI) при любом касании
+- Action panel — фиксированный справа (44+px кнопки)
+- Top bar — gold/gems/level + меню/settings
 
 ## Окно апгрейда здания (tap-модалка)
 
@@ -188,11 +193,12 @@ Reward grant → floating text "+50% activated for 15:00"
 
 ## Touch behavior
 
-- **Single tap:** primary action
+- **Single touch вне UI (левая зона):** активирует Virtual Joystick → drag = движение аватара
+- **Single tap по зданию / NPC / UI:** primary action (открыть меню / вызвать действие)
 - **Long press (500 мс):** info tooltip
-- **Drag empty area:** pan camera
+- **Two-finger drag над миром:** pan камеры
 - **Pinch:** zoom камеры
-- **Double tap:** center on player
+- **Double tap по миру:** центрирование камеры на аватаре
 
 ## Размеры элементов (мобиль)
 
@@ -226,5 +232,7 @@ Reward grant → floating text "+50% activated for 15:00"
 
 ## Открытые вопросы
 
-- [ ] Landscape mode для tablets — добавлять во flow когда?
+- [ ] Portrait fallback для очень узких экранов (если такие будут на mobile)
 - [ ] Глобальный UI sound bus — пока через `AudioStreamPlayer` или нативный
+- [ ] Joystick: фиксированная позиция (для аксессибилити) vs только динамическая
+- [ ] Sprint-кнопка справа (зажал → бег) — нужна или скорость одна?

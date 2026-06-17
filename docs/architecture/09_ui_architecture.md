@@ -2,10 +2,24 @@
 
 ## Принципы
 
-- Mobile-first, портретная ориентация
+- Mobile-first, **landscape ориентация** (см. ADR-004)
 - Тач-таргеты ≥ 44×44 pt (GDD/9)
-- Однорукое управление в области большого пальца
+- **Двуручный grip:** левый палец — virtual joystick для движения, правый — UI и тап-взаимодействия
 - Все экраны строятся из переиспользуемых виджетов и темы
+
+> **ADR-004: Landscape вместо portrait + Virtual Joystick.**
+> **Дата:** 2026-06-17.
+> **Причина:** GDD/9 explicitly описывает виртуальный джойстик как primary
+> movement control (§9.3 «Иерархия Тактильных Взаимодействий» + §«Movement
+> Controls»). GDD/3 показывает `Joystick Navigation`. Это RPG-action
+> paradigm, не tap-to-move idle-tycoon. Landscape даёт больше горизонтальной
+> площади для джойстика слева + UI справа + 3D-сцены в центре.
+> **Следствия:**
+> - `project.godot`: viewport 1920×1080, orientation = LANDSCAPE
+> - HUD перерисован под landscape (gold/level — top-left, action panel — bottom-right)
+> - Player avatar управляется через `VirtualJoystick` widget, не через tap-to-move
+> - Тап здания = открыть menu (не переместиться). Игрок сам подходит джойстиком
+> - Camera-follow (не drag-pan) когда есть movable player
 
 ## Структура UI
 
@@ -44,24 +58,32 @@ scenes/ui/
 
 Альтернативные темы (например, тёмная) — отдельные `.theme.tres`, переключаются на лету.
 
-## Layout HUD
+## Layout HUD (landscape 1920×1080)
 
 ```
-┌─────────────────────────────────────────────┐  ← safe area top
-│ ⬆ GOLD: 1,234  💎 50  ⏱ 12:34            │  ← currency bar (top)
-├─────────────────────────────────────────────┤
-│                                             │
-│                                             │
-│            3D Game World                    │
-│         (камера, здания, NPC)               │
-│                                             │
-│                                             │
-├─────────────────────────────────────────────┤
-│ [Shop] [NPCs] [Upgrades] [Events] [Menu]   │  ← bottom action bar
-└─────────────────────────────────────────────┘  ← safe area bottom
+┌───────────────────────────────────────────────────────────────────────┐  ← safe area
+│ ⬆ GOLD: 1,234  💎 50  ⏱ 12:34                          [Menu] [⚙] │  ← top status bar
+├───────────────────────────────────────────────────────────────────────┤
+│                                                                       │
+│                                                                       │
+│                                                       ┌─[Shop]──┐    │
+│                                                       │[NPCs]    │    │
+│              3D Game World                            │[Upgrades]│    │  ← right action panel
+│         (камера, здания, NPC)                         │[Events]  │    │
+│                                                       └──────────┘    │
+│                                                                       │
+│      ◯  ← virtual joystick (динамический)                            │  ← left thumb zone
+│     ◯◯    появляется в точке касания                                 │
+│      ◯                                                                │
+└───────────────────────────────────────────────────────────────────────┘
 ```
 
-Bottom bar — контекстный: меняется в зависимости от того, что игрок тапнул в мире (здание → апгрейд-панель, NPC → инфо-панель).
+- **Left thumb zone (1/3 экрана слева):** virtual joystick активируется при тапе вне UI
+- **Right action panel:** Shop / NPCs / Upgrades / Events — постоянно видимы
+- **Top bar:** валюты + меню + settings
+- **Context overlays:** building upgrade modal появляется по центру при тапе здания
+
+Right panel — контекстный: меняется в зависимости от тапнутого в мире (здание → апгрейд + NPC slots).
 
 ## Wireframe ключевых экранов
 
@@ -115,12 +137,27 @@ func _on_pressed() -> void:
 
 ## Input
 
-- **Tap:** `gui_input` на Control / `input_event` на Area3D в мире
-- **Long press:** через таймер на `_pressed` (default 500 мс)
-- **Pinch zoom (камера):** через `InputEventScreenPinch` (Godot 4 поддерживает) или fallback на два `InputEventScreenTouch`
-- **Pan мир:** drag над пустой областью
+### Primary controls (landscape, двуручный grip)
 
-Чувствительность настраивается в `Settings`.
+- **Левый палец — Virtual Joystick:** тап вне UI → появляется динамический джойстик в точке касания → drag для движения аватара. Параметры (GDD/9):
+  - max_radius: 80 px
+  - dead_zone: 10% от max_radius
+  - fade in/out 150-200 мс
+  - Реализация: `scripts/ui/virtual_joystick.gd` + `scenes/ui/widgets/virtual_joystick.tscn`
+- **Правый палец — UI и взаимодействия:**
+  - Тап здания (Area3D) → открыть upgrade-modal (не перемещает аватара!)
+  - Тап NPC → инфо-панель
+  - Тап action panel (right) → переход на экран
+  - Тап top bar → settings / меню
+
+### Жесты
+
+- **Long press (500 мс):** info tooltip
+- **Pinch zoom (камера):** `InputEventScreenPinch` или fallback на два `InputEventScreenTouch`
+- **Pan камеры:** drag двумя пальцами одновременно (одиночный drag = joystick)
+- **Double tap по миру:** центрирование камеры на аватаре
+
+Чувствительность джойстика и камеры — в `Settings`.
 
 ## Анимации UI
 
@@ -147,5 +184,6 @@ func _on_pressed() -> void:
 
 ## Open вопросы
 
-- [ ] Landscape support для tablets — версия 1.x или post-launch?
+- [ ] Portrait fallback для tablet / большой экран — нужен ли вариант?
 - [ ] Глобальный UI sound layer (tap-сэмплы) — через AudioBus отдельный
+- [ ] Joystick: фиксированный режим (всегда видимый) как fallback для acessibility

@@ -29,7 +29,7 @@
 - [ ] Анимации NPC: idle / walk / work / carry
 - [ ] HUD: gold, gems, level показывают данные
 - [ ] Сейв/загрузка работают
-- [ ] Тач-управление камерой (drag + pinch) работает
+- [ ] Тач-управление: Virtual Joystick для аватара + pinch zoom камеры работают
 - [ ] 60 FPS на iPhone 8 / Galaxy S8
 
 ### Phase 2 → Phase 3

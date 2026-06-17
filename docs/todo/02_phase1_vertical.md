@@ -44,9 +44,11 @@
 
 ## E3 · Player + NPC
 
-- [ ] **P1-020** • Player avatar 3D, тач-контроль (точка назначения по тапу)
-  - Files: `scenes/entities/player.tscn`, `scripts/entities/player.gd`
+- [ ] **P1-020** • Player avatar 3D + Virtual Joystick управление
+  - Files: `scenes/entities/player.tscn`, `scripts/entities/player.gd`, активация `scripts/ui/virtual_joystick.gd`
+  - Acceptance: левый палец → joystick управляет аватаром через `CharacterBody3D.velocity`. Тап здания **открывает меню**, не перемещает. Camera follow-mode.
   - Estimate: L
+  - Notes: заготовки виджета VirtualJoystick + scene сделаны в Phase 0 (после ADR-004 о landscape + joystick). Здесь подключаем к Player.
 - [ ] **P1-021** • Импорт player модели и анимаций (из Phase 0)
   - Estimate: S
 - [ ] **P1-022** • Player animation state (idle / walk / carry / work)

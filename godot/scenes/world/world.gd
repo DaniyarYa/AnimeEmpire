@@ -1,109 +1,96 @@
-## Прототип Phase 0: tap → +gold → upgrade.
+## Phase 1 vertical slice: оркестрация Player + Buildings + UI.
 ##
-## Не использует EconomySim — это намеренный минимум, чтобы проверить
-## responsiveness Godot mobile renderer без зависимости от симуляции.
-## Полноценная мир-сцена строится в Phase 1 (P1-030).
+## Подключает joystick → player, camera → follow player, buildings → modal.
 extends Node3D
 
-const BASE_GOLD_PER_TAP := 1
-const UPGRADE_BASE_COST := 10
-const UPGRADE_COST_GROWTH := 1.5
-
-@onready var _building: Area3D = $Building
-@onready var _building_mesh: MeshInstance3D = $Building/Mesh
-@onready var _avatar: Node3D = $Avatar
-@onready var _gold_label: Label = $HUD/TopPanel/VBox/GoldLabel
-@onready var _mult_label: Label = $HUD/TopPanel/VBox/MultLabel
-@onready var _upgrade_button: Button = $HUD/BottomPanel/UpgradeButton
-
-var _gold: int = 0
-var _level: int = 1
+@onready var _player: Node3D = $Player
+@onready var _camera: Camera3D = $Camera3D
+@onready var _joystick: Control = $HUD/VirtualJoystick
+@onready var _gold_label: Label = $HUD/TopBar/Margin/HBox/GoldLabel
+@onready var _inventory_label: Label = $HUD/TopBar/Margin/HBox/InventoryLabel
+@onready var _modal: CanvasItem = $HUD/BuildingModal
 
 
 func _ready() -> void:
-	print("[World] ready (prototype)")
-	_building.input_event.connect(_on_building_input)
-	_upgrade_button.pressed.connect(_on_upgrade_pressed)
+	print("[World] ready (Phase 1)")
+	_camera.follow_target = _player
+	_joystick.direction_changed.connect(_player.set_movement_direction)
+	EventBus.currency_changed.connect(_on_currency_changed)
+	EventBus.resource_produced.connect(_on_resource_produced)
+	EventBus.resource_sold.connect(_on_resource_sold)
+	for building in get_tree().get_nodes_in_group("buildings"):
+		if building.has_signal("clicked"):
+			building.clicked.connect(_on_building_clicked)
 	_refresh_hud()
-	_start_avatar_idle()
 
 
-const AVATAR_ANIM_SPEED := 2.0
+const RESOURCE_ICON := {"wheat": "🌾", "flour": "🌾→", "bread": "🍞"}
+const FLOATING_TEXT_COOLDOWN := 0.6
+
+var _last_float_per_building: Dictionary = {}  ## building_id -> int amount accumulated
+var _last_float_time_per_building: Dictionary = {}  ## building_id -> unix_time
 
 
-func _start_avatar_idle() -> void:
-	if _avatar == null:
+func _on_building_clicked(building) -> void:
+	_modal.show_for(building)
+
+
+func _on_currency_changed(_kind: String, _value: int) -> void:
+	_refresh_hud()
+
+
+func _on_resource_produced(building_id: String, resource_id: String, amount: int) -> void:
+	_refresh_hud()
+	_accumulate_floating(building_id, resource_id, amount)
+
+
+func _accumulate_floating(building_id: String, resource_id: String, amount: int) -> void:
+	var prev_amount: int = int(_last_float_per_building.get(building_id, 0))
+	_last_float_per_building[building_id] = prev_amount + amount
+
+	var now: float = Time.get_ticks_msec() / 1000.0
+	var last_time: float = float(_last_float_time_per_building.get(building_id, 0.0))
+	if now - last_time < FLOATING_TEXT_COOLDOWN:
 		return
-	var anim_player := _find_anim_player(_avatar)
-	if anim_player == null:
-		push_warning("[World] AnimationPlayer не найден в Avatar")
+
+	var building := _find_building_node(building_id)
+	if building == null:
 		return
-	var anims := anim_player.get_animation_list()
-	if anims.is_empty():
-		push_warning("[World] нет анимаций в Avatar")
-		return
-	print("[World] avatar animations: ", anims)
-	anim_player.speed_scale = AVATAR_ANIM_SPEED
-	anim_player.play(anims[0])
+	var accumulated: int = int(_last_float_per_building[building_id])
+	var icon: String = RESOURCE_ICON.get(resource_id, "+")
+	FloatingText.spawn(
+		self,
+		building.global_position + Vector3(0, 2.5, 0),
+		"+%d %s" % [accumulated, icon],
+		Color(1, 0.85, 0.3)
+	)
+	_last_float_per_building[building_id] = 0
+	_last_float_time_per_building[building_id] = now
 
 
-func _find_anim_player(node: Node) -> AnimationPlayer:
-	if node is AnimationPlayer:
-		return node
-	for child in node.get_children():
-		var found := _find_anim_player(child)
-		if found != null:
-			return found
+func _on_resource_sold(resource_id: String, amount: int, gold: int) -> void:
+	_refresh_hud()
+	var market := _find_building_node("market")
+	if market != null:
+		FloatingText.spawn(
+			self,
+			market.global_position + Vector3(0, 2.5, 0),
+			"+%d 💰 (−%d %s)" % [gold, amount, resource_id],
+			Color(1, 0.722, 0.302)
+		)
+
+
+func _find_building_node(building_id: String) -> Node3D:
+	for b in get_tree().get_nodes_in_group("buildings"):
+		if b.building_def != null and b.building_def.id == building_id:
+			return b
 	return null
 
 
-func _on_building_input(_camera: Node, event: InputEvent, click_pos: Vector3, _normal: Vector3, _idx: int) -> void:
-	if event is InputEventScreenTouch and event.pressed:
-		_collect(click_pos)
-	elif event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
-		_collect(click_pos)
-
-
-func _collect(at: Vector3) -> void:
-	var amount := BASE_GOLD_PER_TAP * _level
-	_gold += amount
-	_pulse_building()
-	FloatingText.spawn(self, at + Vector3.UP * 0.5, "+%d" % amount, Color(1, 0.85, 0.3))
-	_refresh_hud()
-
-
-func _on_upgrade_pressed() -> void:
-	var cost := _upgrade_cost()
-	if _gold < cost:
-		_pulse_button_error()
-		return
-	_gold -= cost
-	_level += 1
-	_refresh_hud()
-	FloatingText.spawn(self, _building.global_position + Vector3.UP * 2.5, "Lv %d!" % _level, Color(0.5, 0.83, 0.43))
-
-
-func _upgrade_cost() -> int:
-	return int(UPGRADE_BASE_COST * pow(UPGRADE_COST_GROWTH, _level - 1))
-
-
 func _refresh_hud() -> void:
-	_gold_label.text = "Gold: %d" % _gold
-	_mult_label.text = "Tap = +%dg · Lv %d" % [BASE_GOLD_PER_TAP * _level, _level]
-	var cost := _upgrade_cost()
-	_upgrade_button.text = "Upgrade Lv %d → %d (cost %d)" % [_level, _level + 1, cost]
-	_upgrade_button.disabled = _gold < cost
-
-
-func _pulse_building() -> void:
-	var tween := create_tween()
-	_building_mesh.scale = Vector3.ONE
-	tween.tween_property(_building_mesh, "scale", Vector3.ONE * 1.1, 0.05)
-	tween.tween_property(_building_mesh, "scale", Vector3.ONE, 0.1)
-
-
-func _pulse_button_error() -> void:
-	var tween := create_tween()
-	_upgrade_button.modulate = Color(1, 1, 1, 1)
-	tween.tween_property(_upgrade_button, "modulate", Color(1, 0.4, 0.4), 0.1)
-	tween.tween_property(_upgrade_button, "modulate", Color(1, 1, 1), 0.2)
+	_gold_label.text = "💰 %d" % EconomySim.get_gold()
+	_inventory_label.text = "🌾 %d   🌾→ %d   🍞 %d" % [
+		EconomySim.get_inventory("wheat"),
+		EconomySim.get_inventory("flour"),
+		EconomySim.get_inventory("bread"),
+	]

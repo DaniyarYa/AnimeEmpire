@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="NPCDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/npc_def.gd" id="1_npcdef"]
+
+[resource]
+script = ExtResource("1_npcdef")
+id = "gatherer_farmer"
+display_name_key = "npc.gatherer_farmer.name"
+category = "gatherer"
+rarity = "common"
+base_speed = 2.0
+base_capacity = 5
+base_efficiency = 0.75
+hire_cost_gold = 1000
+attached_building_category = "generator"

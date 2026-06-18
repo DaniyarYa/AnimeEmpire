@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="BuildingDef" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/building_def.gd" id="1_blddef"]
+[ext_resource type="Resource" path="res://resources/resources_chain/wheat.tres" id="2_wheat"]
+[ext_resource type="Resource" path="res://resources/resources_chain/flour.tres" id="3_flour"]
+
+[resource]
+script = ExtResource("1_blddef")
+id = "mill"
+display_name_key = "building.mill.name"
+category = "processor"
+input_resource = ExtResource("2_wheat")
+input_amount = 3
+output_resource = ExtResource("3_flour")
+output_amount = 1
+base_cycle_seconds = 10.0
+base_cost_gold = 500
+cost_growth = 1.12
+max_level = 25
+unlock_level = 3
+npc_slots = 1

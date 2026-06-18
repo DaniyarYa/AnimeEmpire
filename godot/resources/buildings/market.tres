@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="BuildingDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/building_def.gd" id="1_blddef"]
+
+[resource]
+script = ExtResource("1_blddef")
+id = "market"
+display_name_key = "building.market.name"
+category = "service"
+input_resource = null
+input_amount = 0
+output_resource = null
+output_amount = 0
+base_cycle_seconds = 0.0
+base_cost_gold = 200
+cost_growth = 1.12
+max_level = 5
+unlock_level = 1
+npc_slots = 0

@@ -1,0 +1,92 @@
+[gd_scene load_steps=5 format=3 uid="uid://wundf0oref1p"]
+
+[ext_resource type="Script" path="res://scripts/ui/building_modal.gd" id="1_modal"]
+
+[sub_resource type="StyleBoxFlat" id="ModalPanel"]
+content_margin_left = 24.0
+content_margin_top = 20.0
+content_margin_right = 24.0
+content_margin_bottom = 20.0
+bg_color = Color(1, 0.957, 0.878, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.42, 0.32, 0.18, 1)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+shadow_color = Color(0, 0, 0, 0.4)
+shadow_size = 16
+
+[sub_resource type="LabelSettings" id="TitleSettings"]
+font_size = 28
+font_color = Color(0.176, 0.165, 0.18, 1)
+
+[sub_resource type="LabelSettings" id="InfoSettings"]
+font_size = 18
+font_color = Color(0.4, 0.36, 0.34, 1)
+
+[node name="BuildingModal" type="Control"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1
+script = ExtResource("1_modal")
+
+[node name="Backdrop" type="ColorRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.5)
+mouse_filter = 1
+
+[node name="Panel" type="PanelContainer" parent="."]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -280.0
+offset_top = -200.0
+offset_right = 280.0
+offset_bottom = 200.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("ModalPanel")
+
+[node name="VBox" type="VBoxContainer" parent="Panel"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="Title" type="Label" parent="Panel/VBox"]
+layout_mode = 2
+text = "Building"
+horizontal_alignment = 1
+label_settings = SubResource("TitleSettings")
+
+[node name="Info" type="Label" parent="Panel/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+text = "info"
+horizontal_alignment = 1
+vertical_alignment = 1
+label_settings = SubResource("InfoSettings")
+autowrap_mode = 2
+
+[node name="ActionButton" type="Button" parent="Panel/VBox"]
+custom_minimum_size = Vector2(0, 56)
+layout_mode = 2
+text = "Start production"
+theme_override_font_sizes/font_size = 20
+
+[node name="CloseButton" type="Button" parent="Panel/VBox"]
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+text = "Close"
+theme_override_font_sizes/font_size = 18

@@ -1,32 +1,44 @@
-## Камера-риг с тач-управлением: drag pan по XZ + pinch zoom.
+## Камера в follow-mode с pinch zoom и free-mode при двух пальцах.
 ##
-## Прикрепляется к Camera3D в мире. На мобиле работают touch, в Editor —
-## эмуляция мыши (включена в project.godot).
+## Phase 1 refactor (P1-033): убрали drag-pan, добавили follow_target.
+## Подробности — docs/architecture/09_ui_architecture.md §«Camera».
 class_name CameraRig
 extends Camera3D
 
-@export var pan_speed: float = 0.02
+const PINCH_SENSITIVITY := 0.01
+const SMOOTHING_BASE := 30.0  ## Множитель для frame-rate independent lerp.
+
+## Узел (обычно Player), за которым следует камера.
+@export var follow_target: Node3D = null
+
+## Сглаживание 0..1: 0 = instant, чем выше — тем плавнее (и медленнее).
+@export_range(0.0, 0.99) var follow_smoothing: float = 0.15
+
+## Базовый offset от target. Длина = расстояние, нормализованный = угол.
+@export var follow_offset: Vector3 = Vector3(0, 8, 12)
+
+## Минимум / максимум расстояния от target при zoom.
 @export var min_zoom_distance: float = 6.0
 @export var max_zoom_distance: float = 30.0
-@export var zoom_step: float = 1.0
 
-## Лимиты по XZ — простая «коробка» вокруг центра мира.
-@export var pan_limit_xz: Vector2 = Vector2(20.0, 20.0)
+## После двух-пальцевого drag — сколько секунд оставаться в free-mode перед
+## возвратом offset к базе.
+@export var free_mode_timeout: float = 3.0
 
-## Pitch камеры сохраняется при движении (top-down угол из сцены).
-var _initial_basis: Basis
-var _initial_distance: float
-var _drag_anchor: Vector2 = Vector2.ZERO
-var _is_dragging: bool = false
-
-# Pinch state.
-var _active_touches: Dictionary = {}  # index -> position
+var _free_mode_timer: float = 0.0
+var _active_touches: Dictionary = {}  ## index -> position
 var _last_pinch_distance: float = 0.0
 
 
-func _ready() -> void:
-	_initial_basis = transform.basis
-	_initial_distance = global_position.length()
+func _process(delta: float) -> void:
+	if follow_target == null:
+		return
+	if _free_mode_timer > 0.0:
+		_free_mode_timer -= delta
+	var goal: Vector3 = follow_target.global_position + follow_offset
+	var t: float = 1.0 - pow(follow_smoothing, delta * SMOOTHING_BASE)
+	global_position = global_position.lerp(goal, t)
+	look_at(follow_target.global_position, Vector3.UP)
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -41,57 +53,41 @@ func _unhandled_input(event: InputEvent) -> void:
 func _handle_touch(event: InputEventScreenTouch) -> void:
 	if event.pressed:
 		_active_touches[event.index] = event.position
-		if _active_touches.size() == 1:
-			_drag_anchor = event.position
-			_is_dragging = true
-		elif _active_touches.size() == 2:
-			_is_dragging = false
+		if _active_touches.size() == 2:
 			_last_pinch_distance = _calc_pinch_distance()
 	else:
 		_active_touches.erase(event.index)
 		if _active_touches.size() < 2:
 			_last_pinch_distance = 0.0
-		if _active_touches.is_empty():
-			_is_dragging = false
 
 
 func _handle_drag(event: InputEventScreenDrag) -> void:
 	_active_touches[event.index] = event.position
 	if _active_touches.size() == 2:
 		_apply_pinch()
-	elif _is_dragging:
-		_apply_pan(event.relative)
 
 
 func _handle_mouse_button(event: InputEventMouseButton) -> void:
-	# Колесо мыши — зум в редакторе.
 	if event.button_index == MOUSE_BUTTON_WHEEL_UP and event.pressed:
-		_zoom_by(-zoom_step)
+		_zoom_by(-1.0)
 	elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN and event.pressed:
-		_zoom_by(zoom_step)
-
-
-func _apply_pan(delta: Vector2) -> void:
-	# Преобразуем экранный delta в смещение по XZ.
-	# Right vector камеры — для горизонтального drag; forward проецируем на XZ.
-	var right := global_transform.basis.x
-	var forward := -global_transform.basis.z
-	forward.y = 0.0
-	forward = forward.normalized()
-	var move := -right * delta.x * pan_speed + forward * delta.y * pan_speed
-	global_position += move
-	global_position.x = clampf(global_position.x, -pan_limit_xz.x, pan_limit_xz.x)
-	global_position.z = clampf(global_position.z, -pan_limit_xz.y, pan_limit_xz.y)
+		_zoom_by(1.0)
 
 
 func _apply_pinch() -> void:
-	var d := _calc_pinch_distance()
-	if _last_pinch_distance == 0.0:
-		_last_pinch_distance = d
-		return
-	var delta := _last_pinch_distance - d
-	_zoom_by(delta * 0.01)
+	var d: float = _calc_pinch_distance()
+	if _last_pinch_distance > 0.0:
+		var delta: float = _last_pinch_distance - d
+		_zoom_by(delta * PINCH_SENSITIVITY)
 	_last_pinch_distance = d
+	_free_mode_timer = free_mode_timeout
+
+
+func _zoom_by(amount: float) -> void:
+	var direction: Vector3 = follow_offset.normalized()
+	var current_dist: float = follow_offset.length()
+	var new_dist: float = clampf(current_dist + amount, min_zoom_distance, max_zoom_distance)
+	follow_offset = direction * new_dist
 
 
 func _calc_pinch_distance() -> float:
@@ -99,13 +95,3 @@ func _calc_pinch_distance() -> float:
 	if points.size() < 2:
 		return 0.0
 	return (points[0] as Vector2).distance_to(points[1] as Vector2)
-
-
-func _zoom_by(amount: float) -> void:
-	# Двигаем камеру вдоль её forward-оси, сохраняя угол наклона.
-	var forward := -global_transform.basis.z
-	var new_pos := global_position - forward * amount
-	var distance := new_pos.length()
-	if distance < min_zoom_distance or distance > max_zoom_distance:
-		return
-	global_position = new_pos

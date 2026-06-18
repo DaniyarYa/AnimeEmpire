@@ -77,6 +77,11 @@
 - [ ] **BL-803** • Color grading / post-process под аниме-палитру
   - Тёплая палитра, мягкий contrast
 - [ ] **BL-804** • Грубое stylized освещение зданий (без realistic shadows)
+- [ ] **BL-810** • AnimationTree для Player с blend transitions
+  - Сейчас `PlayerAnimationController` использует прямой `AnimationPlayer.play()` switch
+  - AnimationTree даст плавные переходы idle↔walk↔run без jerky snap
+  - Требует setup в Godot Editor (AnimationNodeStateMachine + параметры)
+  - Заблокирован: FBX анимации имеют armature-prefix имена, нужно сначала переименовать через Import dock per-file
 
 ## Hotfix queue
 

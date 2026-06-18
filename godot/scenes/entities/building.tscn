@@ -1,0 +1,28 @@
+[gd_scene format=3 uid="uid://b5w32r8gsunfk"]
+
+[ext_resource type="Script" path="res://scripts/entities/building.gd" id="1_building"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_1"]
+size = Vector3(2, 2, 2)
+
+[sub_resource type="StandardMaterial3D" id="Material_default"]
+albedo_color = Color(1, 0.722, 0.302, 1)
+roughness = 0.85
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_1"]
+size = Vector3(2, 2, 2)
+
+[node name="Building" type="Node3D"]
+script = ExtResource("1_building")
+
+[node name="Mesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+mesh = SubResource("BoxMesh_1")
+surface_material_override/0 = SubResource("Material_default")
+
+[node name="ClickArea" type="Area3D" parent="."]
+input_ray_pickable = true
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="ClickArea"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+shape = SubResource("BoxShape3D_1")

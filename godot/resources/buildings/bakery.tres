@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="BuildingDef" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/building_def.gd" id="1_blddef"]
+[ext_resource type="Resource" path="res://resources/resources_chain/flour.tres" id="2_flour"]
+[ext_resource type="Resource" path="res://resources/resources_chain/bread.tres" id="3_bread"]
+
+[resource]
+script = ExtResource("1_blddef")
+id = "bakery"
+display_name_key = "building.bakery.name"
+category = "processor"
+input_resource = ExtResource("2_flour")
+input_amount = 2
+output_resource = ExtResource("3_bread")
+output_amount = 1
+base_cycle_seconds = 30.0
+base_cost_gold = 2500
+cost_growth = 1.12
+max_level = 25
+unlock_level = 8
+npc_slots = 1

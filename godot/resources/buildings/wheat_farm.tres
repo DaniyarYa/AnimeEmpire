@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="BuildingDef" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/building_def.gd" id="1_blddef"]
+[ext_resource type="Resource" path="res://resources/resources_chain/wheat.tres" id="2_wheat"]
+
+[resource]
+script = ExtResource("1_blddef")
+id = "wheat_farm"
+display_name_key = "building.wheat_farm.name"
+category = "generator"
+input_resource = null
+input_amount = 0
+output_resource = ExtResource("2_wheat")
+output_amount = 1
+base_cycle_seconds = 1.0
+base_cost_gold = 100
+cost_growth = 1.12
+max_level = 25
+unlock_level = 1
+npc_slots = 1

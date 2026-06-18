@@ -20,6 +20,20 @@ signal touch_ended
 @export var max_radius: float = 80.0
 @export var dead_zone_pct: float = 0.1  ## 0..1, доля от max_radius
 
+## Дефолтная позиция, когда пользователь не держит палец.
+## Левый-нижний угол с отступом.
+@export var resting_position: Vector2 = Vector2(160.0, -200.0)
+
+## Прозрачность джойстика в неактивном (resting) состоянии.
+@export var resting_alpha: float = 0.35
+
+## Прозрачность во время активного use.
+@export var active_alpha: float = 0.85
+
+## Доля ширины экрана слева, где активируется джойстик.
+## Остальная часть экрана пропускает события 3D-сцене (тапы зданий).
+@export_range(0.0, 1.0) var active_zone_width_pct: float = 0.5
+
 @onready var _background: Control = $Background
 @onready var _knob: Control = $Background/Knob
 
@@ -30,19 +44,39 @@ var _current_direction: Vector2 = Vector2.ZERO
 
 
 func _ready() -> void:
-	_hide_joystick()
-	mouse_filter = Control.MOUSE_FILTER_STOP
+	mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_show_at_rest()
 
 
-func _gui_input(event: InputEvent) -> void:
+func _show_at_rest() -> void:
+	# Позиция: bottom-left относительно viewport.
+	var viewport_size: Vector2 = get_viewport_rect().size
+	_origin = Vector2(resting_position.x, viewport_size.y + resting_position.y)
+	_background.position = _origin - _background.size * 0.5
+	_knob.position = _background.size * 0.5 - _knob.size * 0.5
+	_background.visible = true
+	_background.modulate.a = resting_alpha
+
+
+func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventScreenTouch:
+		if event.pressed and not _in_active_zone(event.position):
+			return
 		_handle_touch(event)
 	elif event is InputEventScreenDrag:
-		_handle_drag(event)
+		if _active and event.index == _touch_index:
+			_handle_drag(event)
 	elif event is InputEventMouseButton:
+		if event.pressed and not _in_active_zone(event.position):
+			return
 		_handle_mouse_button(event)
 	elif event is InputEventMouseMotion and _active and _touch_index == -1:
 		_update_knob(event.position)
+
+
+func _in_active_zone(pos: Vector2) -> bool:
+	var viewport_size: Vector2 = get_viewport_rect().size
+	return pos.x < viewport_size.x * active_zone_width_pct
 
 
 func _handle_touch(event: InputEventScreenTouch) -> void:
@@ -72,7 +106,7 @@ func _start(at: Vector2, touch_index: int) -> void:
 	_origin = at
 	_background.position = _origin - _background.size * 0.5
 	_knob.position = _background.size * 0.5 - _knob.size * 0.5
-	_show_joystick()
+	_animate_to_alpha(active_alpha)
 	touch_started.emit()
 
 
@@ -81,7 +115,8 @@ func _stop() -> void:
 	_touch_index = -1
 	_current_direction = Vector2.ZERO
 	direction_changed.emit(_current_direction)
-	_hide_joystick()
+	_show_at_rest()
+	_animate_to_alpha(resting_alpha)
 	touch_ended.emit()
 
 
@@ -101,16 +136,8 @@ func _update_knob(at: Vector2) -> void:
 		direction_changed.emit(_current_direction)
 
 
-func _show_joystick() -> void:
-	_background.visible = true
-	_background.modulate.a = 0.0
-	create_tween().tween_property(_background, "modulate:a", 0.6, 0.15)
-
-
-func _hide_joystick() -> void:
-	var tween := create_tween()
-	tween.tween_property(_background, "modulate:a", 0.0, 0.2)
-	tween.tween_callback(func() -> void: _background.visible = false)
+func _animate_to_alpha(target_alpha: float) -> void:
+	create_tween().tween_property(_background, "modulate:a", target_alpha, 0.15)
 
 
 func get_direction() -> Vector2:

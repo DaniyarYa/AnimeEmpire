@@ -17,6 +17,7 @@ signal clicked(building)
 
 var _line: Resource = null  # ProductionLine
 var _started: bool = false
+var _worker: Node = null  # NPC, если назначен
 
 
 func _ready() -> void:
@@ -26,10 +27,14 @@ func _ready() -> void:
 
 
 ## Запустить производство (для generator / processor). Идемпотентно.
+## Если уже работает NPC — ProductionLine не создаётся (избегаем дубля).
 func start_production() -> void:
 	if _started or building_def == null:
 		return
 	if building_def.category == "service":
+		_started = true
+		return
+	if _worker != null:
 		_started = true
 		return
 	_line = EconomySim.register_line_from_def(building_def, 1)
@@ -39,6 +44,24 @@ func start_production() -> void:
 
 func is_started() -> bool:
 	return _started
+
+
+func has_worker() -> bool:
+	return _worker != null
+
+
+func set_worker(npc: Node) -> void:
+	_worker = npc
+	_started = true  ## С NPC производство идёт автоматически.
+
+
+func dismiss_worker() -> void:
+	if _worker == null:
+		return
+	if _worker.has_method("dismiss"):
+		_worker.dismiss()
+	_worker = null
+	_started = false
 
 
 func get_line() -> Resource:

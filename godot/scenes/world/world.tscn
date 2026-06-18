@@ -1,4 +1,4 @@
-[gd_scene load_steps=17 format=3 uid="uid://ducdedoy5lag8"]
+[gd_scene load_steps=18 format=3 uid="uid://ducdedoy5lag8"]
 
 [ext_resource type="Script" path="res://scenes/world/world.gd" id="1_world"]
 [ext_resource type="Script" path="res://scripts/utils/camera_rig.gd" id="2_camera"]
@@ -10,6 +10,7 @@
 [ext_resource type="Resource" path="res://resources/buildings/mill.tres" id="8_mill"]
 [ext_resource type="Resource" path="res://resources/buildings/bakery.tres" id="9_bakery"]
 [ext_resource type="Resource" path="res://resources/buildings/market.tres" id="10_market"]
+[ext_resource type="PackedScene" path="res://scenes/entities/npc.tscn" id="11_npc"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_1"]
 sky_top_color = Color(0.388, 0.741, 0.945, 1)
@@ -70,6 +71,11 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 4)
 [node name="WheatFarm" parent="." instance=ExtResource("4_building")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 0, -2)
 building_def = ExtResource("7_wheat_farm")
+
+[node name="GathererFarmer" parent="." instance=ExtResource("11_npc")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 0, 2)
+assigned_building_path = NodePath("../WheatFarm")
+work_offset = Vector3(2.5, 0, 1.5)
 
 [node name="Mill" parent="." instance=ExtResource("4_building")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 0, -2)

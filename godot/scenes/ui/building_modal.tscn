@@ -85,6 +85,14 @@ layout_mode = 2
 text = "Start production"
 theme_override_font_sizes/font_size = 20
 
+[node name="DismissButton" type="Button" parent="Panel/VBox"]
+visible = false
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+text = "Dismiss worker"
+theme_override_font_sizes/font_size = 16
+theme_override_colors/font_color = Color(0.85, 0.3, 0.3, 1)
+
 [node name="CloseButton" type="Button" parent="Panel/VBox"]
 custom_minimum_size = Vector2(0, 44)
 layout_mode = 2

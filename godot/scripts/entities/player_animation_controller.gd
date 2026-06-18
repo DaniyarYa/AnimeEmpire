@@ -12,27 +12,50 @@ extends Node
 const STATE_IDLE := "idle"
 const STATE_WALK := "walk"
 const STATE_RUN := "run"
-const STATE_WORK := "work"
+const STATE_WORK_SIT := "work_sit"
+const STATE_WORK_GATHER := "work_gather"
+const STATE_WORK_STAND := "work_stand"
 const STATE_CARRY_WALK := "carry_walk"
 const STATE_CELEBRATE := "celebrate"
 
 const SPEED_THRESHOLD_WALK := 0.05
 const SPEED_THRESHOLD_RUN := 0.85
 
+## Эмитится когда не-loop анимация завершилась. state = логическое имя.
+signal state_finished(state: String)
+
 ## Подстроки для поиска нужной анимации в `AnimationPlayer.get_animation_list()`.
+## Порядок hints важен — первый матч выигрывает.
 const NAME_HINTS := {
 	STATE_IDLE: ["Idle"],
 	STATE_WALK: ["Walking", "Walk"],
 	STATE_RUN: ["Running", "Run"],
-	STATE_WORK: ["Collect_Object", "Collect", "Harvest"],
+	STATE_WORK_SIT: ["work_sit"],
+	STATE_WORK_GATHER: ["work_gather"],
+	STATE_WORK_STAND: ["work_stand"],
 	STATE_CARRY_WALK: ["Carry_Heavy_Object_Walk", "Carry"],
 	STATE_CELEBRATE: ["Victory_Cheer", "Cheer", "Celebrate"],
 }
 
-const ANIM_PLAYBACK_SPEED := 2.0
+## Per-state скорость воспроизведения относительно базовой анимации.
+const STATE_SPEED := {
+	"idle": 2.0,
+	"walk": 2.0,
+	"run": 1.5,
+	"work_sit": 1.0,
+	"work_gather": 1.0,
+	"work_stand": 1.0,
+	"carry_walk": 1.5,
+	"celebrate": 1.0,
+}
+const DEFAULT_ANIM_SPEED := 1.0
 
 ## Анимации, которые должны зацикливаться. Подстроки имён.
 const LOOP_HINTS := ["Idle", "Walking", "Walk", "Running", "Run", "Carry"]
+
+## Анимации, которые НЕ должны зацикливаться.
+## work_sit/gather/stand — one-shot для FSM (replay через state_finished).
+const NO_LOOP_HINTS := ["work_sit", "work_gather", "work_stand", "Victory", "Cheer", "Celebrate"]
 
 ## Дополнительные FBX-файлы, из которых вытаскиваем анимации.
 ## Базовый player_avatar.fbx содержит только idle.
@@ -56,10 +79,23 @@ func _ready() -> void:
 	if _player == null:
 		push_warning("[PlayerAnimController] AnimationPlayer not found")
 		return
-	_player.speed_scale = ANIM_PLAYBACK_SPEED
+	_player.speed_scale = 1.0
 	_load_extra_animations()
 	_resolve_names()
+	_player.animation_finished.connect(_on_animation_finished)
 	_play_state(STATE_IDLE)
+
+
+func _on_animation_finished(_anim_name: String) -> void:
+	# Если есть активный override — эмитим именно его (учитывает trick:
+	# STAND играется как reverse SIT, но логически это STAND).
+	if _override_state != "":
+		state_finished.emit(_override_state)
+		return
+	for state in _resolved_names.keys():
+		if _resolved_names[state] == _anim_name:
+			state_finished.emit(state)
+			return
 
 
 func _load_extra_animations() -> void:
@@ -88,14 +124,21 @@ func _load_extra_animations() -> void:
 
 func _apply_loop_flags(lib: AnimationLibrary) -> void:
 	for anim_name in lib.get_animation_list():
-		var should_loop: bool = false
+		var anim: Animation = lib.get_animation(anim_name)
+		if anim == null:
+			continue
+		var force_no_loop: bool = false
+		for hint in NO_LOOP_HINTS:
+			if anim_name.findn(hint) != -1:
+				force_no_loop = true
+				break
+		if force_no_loop:
+			anim.loop_mode = Animation.LOOP_NONE
+			continue
 		for hint in LOOP_HINTS:
 			if anim_name.findn(hint) != -1:
-				should_loop = true
+				anim.loop_mode = Animation.LOOP_LINEAR
 				break
-		if should_loop:
-			var anim: Animation = lib.get_animation(anim_name)
-			anim.loop_mode = Animation.LOOP_LINEAR
 
 
 func _find_anim_player(node: Node) -> AnimationPlayer:
@@ -137,8 +180,13 @@ func update(speed_normalized: float) -> void:
 
 
 ## Принудительно проиграть состояние. duration <= 0 — без авто-снятия.
+## Если state совпадает с текущим — re-trigger с начала (для FSM replay).
 func override(state: String, duration: float = -1.0) -> void:
 	_override_state = state
+	if not _resolved_names.has(state):
+		push_warning("[PlayerAnimController] override: state '", state, "' not resolved")
+	# Сброс _current_state форсирует _play_state перезапустить анимацию.
+	_current_state = ""
 	_play_state(state)
 	if duration > 0.0:
 		await get_tree().create_timer(duration).timeout
@@ -156,4 +204,6 @@ func _play_state(state: String) -> void:
 	if _player == null:
 		return
 	_current_state = state
-	_player.play(_resolved_names[state])
+	var anim_name: String = _resolved_names[state]
+	var speed: float = float(STATE_SPEED.get(state, DEFAULT_ANIM_SPEED))
+	_player.play(anim_name, -1.0, speed)

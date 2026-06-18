@@ -12,6 +12,7 @@ extends CanvasItem
 @onready var _title_label: Label = $Panel/VBox/Title
 @onready var _info_label: Label = $Panel/VBox/Info
 @onready var _action_button: Button = $Panel/VBox/ActionButton
+@onready var _dismiss_button: Button = $Panel/VBox/DismissButton
 @onready var _close_button: Button = $Panel/VBox/CloseButton
 
 var _current_building = null
@@ -21,6 +22,7 @@ func _ready() -> void:
 	hide()
 	_close_button.pressed.connect(_on_close_pressed)
 	_action_button.pressed.connect(_on_action_pressed)
+	_dismiss_button.pressed.connect(_on_dismiss_pressed)
 	EventBus.resource_produced.connect(_on_inventory_changed)
 	EventBus.resource_sold.connect(_on_resource_sold)
 
@@ -44,23 +46,37 @@ func _refresh() -> void:
 		name_translated = b.id.capitalize()
 	_title_label.text = name_translated
 
+	var has_worker: bool = (
+		_current_building.has_method("has_worker") and _current_building.has_worker()
+	)
+	_dismiss_button.visible = has_worker
+
 	match b.category:
 		"generator":
 			_info_label.text = _generator_info(b)
-			_action_button.text = (
-				"Producing..." if _current_building.is_started() else "Start production"
-			)
+			_action_button.text = _production_button_text()
 			_action_button.disabled = _current_building.is_started()
 		"processor":
 			_info_label.text = _processor_info(b)
-			_action_button.text = (
-				"Producing..." if _current_building.is_started() else "Start production"
-			)
+			_action_button.text = _production_button_text()
 			_action_button.disabled = _current_building.is_started()
 		"service":
 			_info_label.text = _service_info(b)
-			_action_button.text = "Sell all wheat"
-			_action_button.disabled = EconomySim.get_inventory("wheat") == 0
+			_action_button.text = "Sell all"
+			_action_button.disabled = (
+				EconomySim.get_inventory("wheat")
+				+ EconomySim.get_inventory("flour")
+				+ EconomySim.get_inventory("bread")
+				== 0
+			)
+
+
+func _production_button_text() -> String:
+	if _current_building.has_method("has_worker") and _current_building.has_worker():
+		return "Worker assigned"
+	if _current_building.is_started():
+		return "Producing..."
+	return "Start production"
 
 
 func _generator_info(b: Resource) -> String:
@@ -121,6 +137,14 @@ func _sell_all() -> void:
 	EconomySim.sell_inventory(wheat)
 	EconomySim.sell_inventory(flour)
 	EconomySim.sell_inventory(bread)
+	_refresh()
+
+
+func _on_dismiss_pressed() -> void:
+	if _current_building == null:
+		return
+	if _current_building.has_method("dismiss_worker"):
+		_current_building.dismiss_worker()
 	_refresh()
 
 

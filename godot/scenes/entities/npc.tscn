@@ -1,0 +1,25 @@
+[gd_scene format=3 uid="uid://cogcupa4cunaq"]
+
+[ext_resource type="Script" path="res://scripts/entities/npc.gd" id="1_npc"]
+[ext_resource type="Script" path="res://scripts/entities/player_animation_controller.gd" id="2_anim"]
+[ext_resource type="PackedScene" path="res://assets/characters/player_avatar/v0/player_avatar.fbx" id="3_avatar"]
+[ext_resource type="Resource" path="res://resources/npcs/gatherer_farmer.tres" id="4_npcdef"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_1"]
+radius = 0.4
+height = 1.6
+
+[node name="NPC" type="CharacterBody3D"]
+script = ExtResource("1_npc")
+floor_max_angle = 0.785398
+npc_def = ExtResource("4_npcdef")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
+shape = SubResource("CapsuleShape3D_1")
+
+[node name="AvatarMesh" parent="." instance=ExtResource("3_avatar")]
+transform = Transform3D(-0.7, 0, -6.12e-08, 0, 0.7, 0, 6.12e-08, 0, -0.7, 0, 0, 0)
+
+[node name="AnimationController" type="Node" parent="."]
+script = ExtResource("2_anim")

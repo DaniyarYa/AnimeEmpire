@@ -40,9 +40,9 @@
   - Acceptance: тик прогрессирует, при достижении 1.0 эмитит `resource_produced`
   - Estimate: M
   - Done: 2026-06-18. Класс `ProductionLine` + 5 unit-тестов (test_production_line.gd).
-- [x] **P1-012** • Inventory player (Dictionary {resource_id: amount}, cap)
+- [~] **P1-012** • Inventory player (Dictionary {resource_id: amount}, cap)
   - Estimate: S
-  - Done: 2026-06-18. `EconomySim._inventory` Dictionary, методы get_inventory/get_inventory_snapshot. Cap пока не реализован (P2-004).
+  - Partial 2026-06-18: `EconomySim._inventory` Dictionary, методы get_inventory/get_inventory_snapshot. **Не сделано:** cap (Phase 2 P2-004).
 - [x] **P1-013** • Sell action (Market)
   - Acceptance: тап на Market → продаёт всё, gold увеличивается
   - Estimate: M
@@ -68,13 +68,15 @@
 - [ ] **P1-023** • Player inventory carry visual (нести меш ресурса)
   - Estimate: M
   - Notes: визуал-only задача, отложена. Анимация `carry_walk` готова.
-- [ ] **P1-024** • NPC entity + FSM (gatherer)
-  - Files: `scenes/entities/npc.tscn`, `scripts/entities/npc.gd`, `scripts/entities/npc_state_machine.gd`
+- [~] **P1-024** • NPC entity + FSM (gatherer)
+  - Files: `scenes/entities/npc.tscn`, `scripts/entities/npc.gd`
   - Acceptance: NPC автоматически: идёт → собирает → несёт → выгружает → возвращается
   - Estimate: L
+  - Partial 2026-06-18: FSM реализован (IDLE → MOVE → WORK_SIT → WORK_GATHER replay → STAND → IDLE). Production timer независим. Building.set_worker / dismiss_worker. Dismiss-кнопка в BuildingModal. **Не сделано:** carry/deliver (Carrier NPC) — Phase 2 (P2-011).
 - [ ] **P1-025** • NPC импорт модели + анимаций
   - Estimate: M
   - Depends on: P0-031, P0-033
+  - Notes: Phase 1 переиспользует player_avatar.fbx со scale=0.7 как заглушку. Unique gatherer/lumberjack/miner/fisher модели — P2-010.
 
 ## E4 · Сцена и камера
 
@@ -85,9 +87,9 @@
 - [ ] **P1-032** • Building scene template (Node3D + Area3D + scripts)
   - Acceptance: тап Area3D эмитит `_on_clicked`
   - Estimate: M
-- [x] **P1-033** • Camera follow player (опц. drag для свободного режима)
+- [~] **P1-033** • Camera follow player (опц. drag для свободного режима)
   - Estimate: M
-  - Done: 2026-06-18. `CameraRig` рефакторнут: follow_target + follow_smoothing + pinch zoom (6-30 units) + free_mode_timeout 3s. Drag-pan убран. Mouse wheel zoom для editor.
+  - Partial 2026-06-18: `CameraRig` follow_target + smoothing + pinch zoom (6-30 units) + mouse wheel в editor. **Не сделано:** 2-finger drag для free-mode (timer есть, но pan offset не применяется).
 
 ## E5 · UI HUD
 

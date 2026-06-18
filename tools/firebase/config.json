@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "schema_version": 1,
+  "valid_from": 1718600000,
+  "valid_until": 0,
+  "values": {
+    "economy.cost_growth_early": 1.12,
+    "economy.cost_growth_mid": 1.15,
+    "economy.cost_growth_late": 1.18,
+    "buildings.wheat_farm.base_cycle": 1.0,
+    "buildings.wheat_farm.base_cost": 100,
+    "buildings.mill.base_cycle": 10.0,
+    "buildings.mill.base_cost": 500,
+    "buildings.bakery.base_cycle": 30.0,
+    "buildings.bakery.base_cost": 2500,
+    "monetization.starter_pack.price_usd": 2.99,
+    "monetization.starter_pack.window_days": 7,
+    "flags.enable_friends": false,
+    "flags.enable_battle_pass": false,
+    "flags.enable_events": false
+  },
+  "ab_tests": {},
+  "events": []
+}

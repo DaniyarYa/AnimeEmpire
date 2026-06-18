@@ -27,6 +27,17 @@ godot/android/release.keystore
 **/GoogleService-Info-prod.plist
 tools/secrets/
 
+# Firebase CLI artifacts
+# .firebaserc и firebase.json коммитим (project ID и hosting config — не секрет)
+tools/firebase/.firebase/
+tools/firebase/firebase-debug.log
+tools/firebase/firestore.indexes.json
+tools/firebase/firestore.rules
+tools/firebase/storage.rules
+
+# Override-конфиги для локальной разработки
+godot/override.cfg
+
 # ─── macOS ──────────────────────────────────────────────────────────────
 .DS_Store
 .AppleDouble

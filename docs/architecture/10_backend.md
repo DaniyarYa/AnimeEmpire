@@ -38,8 +38,16 @@
 ## MVP: Firebase fast-path
 
 > **ADR-002: Для MVP стартуем на Firebase, мигрируем на AWS перед глобальным релизом.**
-> **Дата:** 2026-06-17. **Причина:** Время до первого билда критично. Firebase Auth + Firestore + Remote Config + Crashlytics + Analytics дают 80% покрытия за неделю. AWS-стек ставим, когда выручка оправдает SRE-нагрузку.
-> **Последствия:** Слой `services/backend_facade.gd` абстрагирует провайдера, чтобы миграция не требовала переписывания клиента.
+> **Дата:** 2026-06-17.
+> **Решение подтверждено в Phase 0 (P0-040).**
+> **Причина:** Время до первого билда критично. Firebase Auth + Firestore + Remote Config + Crashlytics + Analytics дают 80% покрытия за неделю. AWS-стек ставим, когда выручка оправдает SRE-нагрузку.
+> **Phase 0 минимум (только то, что реально нужно):**
+>   - **Firebase Hosting** — статический CDN для `config.json` (наш дешёвый Remote Config). Не используем Firebase Remote Config SDK — он требует Google SDK на клиенте, не подходит для Godot без плагина.
+>   - Auth, Firestore, Functions — отложены до Phase 2.
+> **Последствия:**
+>   - Слой `services/backend_facade.gd` (Phase 2) абстрагирует провайдера, чтобы миграция не требовала переписывания клиента
+>   - В Phase 0 клиент общается с backend только через прямой HTTPRequest к Hosting URL
+>   - Конфиг публичный, никаких секретов в `config.json`
 
 ### Mapping Firebase ↔ AWS
 | Функция | Firebase (MVP) | AWS (prod) |

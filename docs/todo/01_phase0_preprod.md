@@ -98,16 +98,19 @@
 
 ## E5 · Backend-стабы
 
-- [ ] **P0-040** • Решение: Firebase или AWS на старте (см. `architecture/10_backend.md`)
+- [x] **P0-040** • Решение: Firebase или AWS на старте (см. `architecture/10_backend.md`)
   - Acceptance: ADR-002 заполнен с финальным выбором
   - Estimate: S
-- [ ] **P0-041** • Создать backend проект (Firebase или AWS skeleton)
+  - Done: 2026-06-17. Firebase (только Hosting на Phase 0) подтверждён. Auth/Firestore/Functions — Phase 2. Миграция на AWS — Phase 4.
+- [x] **P0-041** • Создать backend проект (Firebase или AWS skeleton)
   - Acceptance: project initialized, dev keys в secure vault, не в git
   - Estimate: M
   - Depends on: P0-040
-- [ ] **P0-042** • Стаб-endpoint `/config` возвращает hardcoded JSON
+  - Done: 2026-06-18. Firebase project `animeempire-a8eee` создан. Hosting deployed: `https://animeempire-a8eee.web.app/config.json`. URL прописан в `project.godot` `[anime_empire] backend/config_url`. Без секретов в репо.
+- [x] **P0-042** • Стаб-endpoint `/config` возвращает hardcoded JSON
   - Acceptance: клиент при старте достаёт конфиг
   - Estimate: M
+  - Done: 2026-06-17. `autoload/remote_config.gd` использует HTTPRequest, читает URL из ProjectSettings (`anime_empire/backend/config_url`). Disk cache + built-in defaults при failure. Template конфига — `tools/firebase/config.json`. После Firebase Hosting deploy ставится реальный URL.
 
 ## E6 · Тестирование
 

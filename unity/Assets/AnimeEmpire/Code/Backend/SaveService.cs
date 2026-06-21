@@ -26,6 +26,10 @@ namespace AnimeEmpire.Backend
             Instance = this;
             EventBus.SaveDirty += OnSaveDirty;
             LoadState();
+            if (GodotSaveMigrator.TryMigrate(_state))
+            {
+                SaveStateNow();
+            }
             Debug.Log($"[SaveService] ready, save_version={(_state.TryGetValue("save_version", out var v) ? v : "new")}");
         }
 

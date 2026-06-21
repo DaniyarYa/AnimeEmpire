@@ -196,6 +196,7 @@ namespace AnimeEmpire.Editor
             go.AddComponent<NPCSystem>();
             go.AddComponent<AnalyticsBus>();
             go.AddComponent<MonetizationService>();
+            go.AddComponent<AudioService>();
             go.AddComponent<SceneRouter>();
             var prefab = PrefabUtility.SaveAsPrefabAsset(go, path);
             Object.DestroyImmediate(go);
@@ -378,6 +379,7 @@ namespace AnimeEmpire.Editor
             scaler.referenceResolution = new Vector2(1920, 1080);
             scaler.matchWidthOrHeight = 0.5f;
             root.AddComponent<GraphicRaycaster>();
+            root.AddComponent<SafeAreaFitter>();
 
             // TopBar
             var topBar = new GameObject("TopBar");

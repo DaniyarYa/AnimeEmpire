@@ -40,6 +40,7 @@ namespace AnimeEmpire.Editor
             BuildBackendConfig();
             AnimatorControllerBuilder.RebuildBoth();
             LocalizationSeeder.Seed();
+            MaterialBuilder.EnsurePlayerMaterial();
             var playerController = AssetDatabase.LoadAssetAtPath<AnimatorController>("Assets/AnimeEmpire/ScriptableObjects/AnimatorControllers/PlayerController.controller");
             var npcController = AssetDatabase.LoadAssetAtPath<AnimatorController>("Assets/AnimeEmpire/ScriptableObjects/AnimatorControllers/NpcController.controller");
             var bootstrap = BuildBootstrapPrefab();
@@ -227,6 +228,7 @@ namespace AnimeEmpire.Editor
         {
             animator = null;
             var modelAsset = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/AnimeEmpire/Art/Characters/PlayerAvatar/v0/player_avatar.fbx");
+            var mat = MaterialBuilder.EnsurePlayerMaterial();
             if (modelAsset != null)
             {
                 var inst = (GameObject)PrefabUtility.InstantiatePrefab(modelAsset);
@@ -236,6 +238,7 @@ namespace AnimeEmpire.Editor
                 if (animator == null) animator = inst.AddComponent<Animator>();
                 animator.runtimeAnimatorController = controller;
                 animator.applyRootMotion = false;
+                MaterialBuilder.AssignToRenderers(inst, mat);
                 return inst;
             }
             var fallback = GameObject.CreatePrimitive(PrimitiveType.Capsule);

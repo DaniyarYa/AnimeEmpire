@@ -9,9 +9,15 @@ Unity 6 LTS (URP, mobile) port of the Godot project at `../godot/`. Goal: behavi
 3. On open, `ProjectBootstrapper` runs once and applies: color space Linear, landscape orientation, IL2CPP defaults, bundle id `com.animeempire.app`.
 4. Run **Tools → Anime Empire → Build Phase 1 Content**. This menu authors:
    - ScriptableObjects: 4 buildings, 3 resources, 1 NPC, BackendConfig.
-   - Prefabs: Bootstrap (Resources/), Player, Building, NPC, HUD, BuildingModal.
+   - AnimatorControllers: PlayerController + NpcController, w/ canonical states wired to FBX clips.
+   - Localization: locales en/ru/es/fr/de/ja + "UI" string table seeded with building/resource/NPC names and UI labels (en + ru filled, others placeholder).
+   - Prefabs: Bootstrap (Resources/), Player, Building, NPC, HUD, BuildingModal — Animator + AnimationController fields auto-wired.
    - Scenes: `Assets/AnimeEmpire/Scenes/Boot.unity` + `World.unity`.
    - Build settings: Boot at index 0, World at 1.
+
+   Other useful menus:
+   - **Tools → Anime Empire → Rebuild Animator Controllers** — re-derive controllers from FBX after rig/clip edits.
+   - **Tools → Anime Empire → Seed Localization (UI table)** — re-seed string table entries.
 5. Open `Boot.unity` and press **Play**. Splash → World → joystick (left half), tap buildings (right half), assign NPC, sell at Market.
 
 ## Layout
@@ -84,3 +90,9 @@ Differences from Godot intentional:
 - Run EditMode: **Window → General → Test Runner → EditMode → Run All**. Expect 14 passing.
 - Run PlayMode: **Test Runner → PlayMode → Run All**. Expect 2 passing.
 - CI runs both via GameCI on push/PR to `main`.
+
+## Headless builds
+
+- Android `.aab`: `Unity -batchmode -nographics -quit -projectPath unity -executeMethod AnimeEmpire.Editor.BuildScript.BuildAndroid -logFile build/android.log`
+- iOS Xcode project: `Unity -batchmode -nographics -quit -projectPath unity -executeMethod AnimeEmpire.Editor.BuildScript.BuildIOS -logFile build/ios.log` (macOS runner)
+- Override output via `BUILD_OUTPUT=path/to/file.aab` env var.

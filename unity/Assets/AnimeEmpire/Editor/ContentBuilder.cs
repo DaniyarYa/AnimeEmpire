@@ -8,6 +8,7 @@ using AnimeEmpire.UI;
 using AnimeEmpire.Utils;
 using TMPro;
 using UnityEditor;
+using UnityEditor.Animations;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -37,10 +38,14 @@ namespace AnimeEmpire.Editor
             var buildings = BuildBuildingDefs(resources);
             var npc = BuildNpcDef();
             BuildBackendConfig();
+            AnimatorControllerBuilder.RebuildBoth();
+            LocalizationSeeder.Seed();
+            var playerController = AssetDatabase.LoadAssetAtPath<AnimatorController>("Assets/AnimeEmpire/ScriptableObjects/AnimatorControllers/PlayerController.controller");
+            var npcController = AssetDatabase.LoadAssetAtPath<AnimatorController>("Assets/AnimeEmpire/ScriptableObjects/AnimatorControllers/NpcController.controller");
             var bootstrap = BuildBootstrapPrefab();
-            var playerPrefab = BuildPlayerPrefab();
+            var playerPrefab = BuildPlayerPrefab(playerController);
             var buildingPrefab = BuildBuildingPrefab();
-            var npcPrefab = BuildNpcPrefab();
+            var npcPrefab = BuildNpcPrefab(npcController);
             var modalPrefab = BuildBuildingModalPrefab(resources);
             var hudPrefab = BuildHUDPrefab(modalPrefab);
             BuildBootScene();
@@ -196,35 +201,52 @@ namespace AnimeEmpire.Editor
             return prefab;
         }
 
-        static GameObject BuildPlayerPrefab()
+        static GameObject BuildPlayerPrefab(AnimatorController controller)
         {
             var path = $"{PrefabsEntities}/Player.prefab";
             var go = new GameObject("Player");
             var cc = go.AddComponent<CharacterController>();
             cc.height = 1.6f; cc.radius = 0.35f; cc.center = new Vector3(0, 0.8f, 0);
-            go.AddComponent<Player>();
+            var player = go.AddComponent<Player>();
 
-            var model = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/AnimeEmpire/Art/Characters/PlayerAvatar/v0/player_avatar.fbx");
-            if (model != null)
-            {
-                var inst = (GameObject)PrefabUtility.InstantiatePrefab(model);
-                inst.name = "Model";
-                inst.transform.SetParent(go.transform, false);
-                inst.AddComponent<PlayerAnimationController>();
-            }
-            else
-            {
-                var fallback = GameObject.CreatePrimitive(PrimitiveType.Capsule);
-                fallback.name = "Model";
-                fallback.transform.SetParent(go.transform, false);
-                fallback.transform.localPosition = new Vector3(0, 0.8f, 0);
-                Object.DestroyImmediate(fallback.GetComponent<CapsuleCollider>());
-                fallback.AddComponent<PlayerAnimationController>();
-            }
+            GameObject model = TryInstantiatePlayerModel(go, controller, out var animator);
+            var animCtrl = (model != null ? model : go).AddComponent<PlayerAnimationController>();
+            var so = new SerializedObject(animCtrl);
+            so.FindProperty("_animator").objectReferenceValue = animator;
+            so.ApplyModifiedPropertiesWithoutUndo();
+            var playerSo = new SerializedObject(player);
+            playerSo.FindProperty("_animController").objectReferenceValue = animCtrl;
+            playerSo.ApplyModifiedPropertiesWithoutUndo();
 
             var prefab = PrefabUtility.SaveAsPrefabAsset(go, path);
             Object.DestroyImmediate(go);
             return prefab;
+        }
+
+        static GameObject TryInstantiatePlayerModel(GameObject parent, AnimatorController controller, out Animator animator)
+        {
+            animator = null;
+            var modelAsset = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/AnimeEmpire/Art/Characters/PlayerAvatar/v0/player_avatar.fbx");
+            if (modelAsset != null)
+            {
+                var inst = (GameObject)PrefabUtility.InstantiatePrefab(modelAsset);
+                inst.name = "Model";
+                inst.transform.SetParent(parent.transform, false);
+                animator = inst.GetComponentInChildren<Animator>();
+                if (animator == null) animator = inst.AddComponent<Animator>();
+                animator.runtimeAnimatorController = controller;
+                animator.applyRootMotion = false;
+                return inst;
+            }
+            var fallback = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+            fallback.name = "Model";
+            fallback.transform.SetParent(parent.transform, false);
+            fallback.transform.localPosition = new Vector3(0, 0.8f, 0);
+            Object.DestroyImmediate(fallback.GetComponent<CapsuleCollider>());
+            animator = fallback.AddComponent<Animator>();
+            animator.runtimeAnimatorController = controller;
+            animator.applyRootMotion = false;
+            return fallback;
         }
 
         static GameObject BuildBuildingPrefab()
@@ -246,30 +268,21 @@ namespace AnimeEmpire.Editor
             return prefab;
         }
 
-        static GameObject BuildNpcPrefab()
+        static GameObject BuildNpcPrefab(AnimatorController controller)
         {
             var path = $"{PrefabsEntities}/NPC.prefab";
             var go = new GameObject("NPC");
             var cc = go.AddComponent<CharacterController>();
             cc.height = 1.6f; cc.radius = 0.3f; cc.center = new Vector3(0, 0.8f, 0);
-            go.AddComponent<NPC>();
-            var model = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/AnimeEmpire/Art/Characters/PlayerAvatar/v0/player_avatar.fbx");
-            if (model != null)
-            {
-                var inst = (GameObject)PrefabUtility.InstantiatePrefab(model);
-                inst.name = "Model";
-                inst.transform.SetParent(go.transform, false);
-                inst.AddComponent<NpcAnimationController>();
-            }
-            else
-            {
-                var fallback = GameObject.CreatePrimitive(PrimitiveType.Capsule);
-                fallback.name = "Model";
-                fallback.transform.SetParent(go.transform, false);
-                fallback.transform.localPosition = new Vector3(0, 0.8f, 0);
-                Object.DestroyImmediate(fallback.GetComponent<CapsuleCollider>());
-                fallback.AddComponent<NpcAnimationController>();
-            }
+            var npc = go.AddComponent<NPC>();
+            GameObject model = TryInstantiatePlayerModel(go, controller, out var animator);
+            var animCtrl = (model != null ? model : go).AddComponent<NpcAnimationController>();
+            var so = new SerializedObject(animCtrl);
+            so.FindProperty("_animator").objectReferenceValue = animator;
+            so.ApplyModifiedPropertiesWithoutUndo();
+            var npcSo = new SerializedObject(npc);
+            npcSo.FindProperty("_anim").objectReferenceValue = animCtrl;
+            npcSo.ApplyModifiedPropertiesWithoutUndo();
             var prefab = PrefabUtility.SaveAsPrefabAsset(go, path);
             Object.DestroyImmediate(go);
             return prefab;

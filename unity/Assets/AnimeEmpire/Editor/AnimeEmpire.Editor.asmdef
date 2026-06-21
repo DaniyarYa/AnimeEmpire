@@ -1,0 +1,23 @@
+{
+  "name": "AnimeEmpire.Editor",
+  "rootNamespace": "AnimeEmpire.Editor",
+  "references": [
+    "AnimeEmpire.Runtime",
+    "Unity.InputSystem",
+    "Unity.Localization",
+    "Unity.Localization.Editor",
+    "Unity.TextMeshPro",
+    "Unity.RenderPipelines.Universal.Runtime"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}

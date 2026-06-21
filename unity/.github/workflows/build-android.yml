@@ -1,0 +1,40 @@
+name: Unity Android build
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'unity-v*'
+
+jobs:
+  build-android:
+    name: Build Android (.aab)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - uses: actions/cache@v4
+        with:
+          path: unity/Library
+          key: Library-AnimeEmpire-Android-${{ hashFiles('unity/Assets/**', 'unity/Packages/**', 'unity/ProjectSettings/**') }}
+          restore-keys: |
+            Library-AnimeEmpire-Android-
+            Library-AnimeEmpire-
+
+      - uses: game-ci/unity-builder@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          projectPath: unity
+          targetPlatform: Android
+          buildName: AnimeEmpire
+          androidExportType: androidAppBundle
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: AnimeEmpire-Android
+          path: build/Android

@@ -38,6 +38,7 @@ namespace AnimeEmpire.Editor
             var buildings = BuildBuildingDefs(resources);
             var npc = BuildNpcDef();
             BuildBackendConfig();
+            BuildIapCatalog();
             AnimatorControllerBuilder.RebuildBoth();
             LocalizationSeeder.Seed();
             MaterialBuilder.EnsurePlayerMaterial();
@@ -171,6 +172,35 @@ namespace AnimeEmpire.Editor
             });
         }
 
+        const string SoIap = "Assets/AnimeEmpire/ScriptableObjects/IAP";
+
+        static void BuildIapCatalog()
+        {
+            EnsureFolder(SoIap);
+            var gems100 = CreateOrUpdate<IapProductDef>($"{SoIap}/gems_100.asset", p =>
+            {
+                p.Id = "gems_100"; p.DisplayNameKey = "iap.gems_100.name";
+                p.Sku = "com.animeempire.gems_100"; p.Kind = "consumable";
+                p.FallbackPriceUsd = 0.99f; p.GemGrant = 100;
+            });
+            var gems500 = CreateOrUpdate<IapProductDef>($"{SoIap}/gems_500.asset", p =>
+            {
+                p.Id = "gems_500"; p.DisplayNameKey = "iap.gems_500.name";
+                p.Sku = "com.animeempire.gems_500"; p.Kind = "consumable";
+                p.FallbackPriceUsd = 4.99f; p.GemGrant = 600;
+            });
+            var noAds = CreateOrUpdate<IapProductDef>($"{SoIap}/no_ads.asset", p =>
+            {
+                p.Id = "no_ads"; p.DisplayNameKey = "iap.no_ads.name";
+                p.Sku = "com.animeempire.no_ads"; p.Kind = "non_consumable";
+                p.FallbackPriceUsd = 2.99f; p.NoAdsUnlock = true;
+            });
+            CreateOrUpdate<IapCatalog>($"{ResourcesPath}/IapCatalog.asset", c =>
+            {
+                c.Products = new System.Collections.Generic.List<IapProductDef> { gems100, gems500, noAds };
+            });
+        }
+
         static T CreateOrUpdate<T>(string path, System.Action<T> configure) where T : ScriptableObject
         {
             var asset = AssetDatabase.LoadAssetAtPath<T>(path);
@@ -198,6 +228,7 @@ namespace AnimeEmpire.Editor
             go.AddComponent<MonetizationService>();
             go.AddComponent<AudioService>();
             go.AddComponent<NotificationService>();
+            go.AddComponent<SettingsService>();
             go.AddComponent<SceneRouter>();
             var prefab = PrefabUtility.SaveAsPrefabAsset(go, path);
             Object.DestroyImmediate(go);
@@ -368,7 +399,127 @@ namespace AnimeEmpire.Editor
             return go;
         }
 
-        static GameObject BuildHUDPrefab(GameObject modalPrefab)
+        static GameObject BuildPauseMenuPrefab()
+        {
+            var path = $"{PrefabsUI}/PauseMenu.prefab";
+            var root = new GameObject("PauseMenu");
+            var rt = root.AddComponent<RectTransform>();
+            rt.anchorMin = Vector2.zero; rt.anchorMax = Vector2.one;
+            rt.offsetMin = Vector2.zero; rt.offsetMax = Vector2.zero;
+
+            var pm = root.AddComponent<PauseMenu>();
+
+            // Open button: top-right gear.
+            var openBtn = MakeButton(root.transform, "OpenButton", new Vector2(0.95f, 0.86f), new Vector2(0.995f, 0.97f), "⚙");
+
+            // Modal root (hidden by default — PauseMenu.Awake disables).
+            var modal = new GameObject("ModalRoot");
+            modal.transform.SetParent(root.transform, false);
+            var mRT = modal.AddComponent<RectTransform>();
+            mRT.anchorMin = Vector2.zero; mRT.anchorMax = Vector2.one;
+            mRT.offsetMin = Vector2.zero; mRT.offsetMax = Vector2.zero;
+            var dim = modal.AddComponent<Image>();
+            dim.color = new Color(0, 0, 0, 0.65f);
+
+            var panel = new GameObject("Panel");
+            panel.transform.SetParent(modal.transform, false);
+            var pRT = panel.AddComponent<RectTransform>();
+            pRT.anchorMin = new Vector2(0.5f, 0.5f);
+            pRT.anchorMax = new Vector2(0.5f, 0.5f);
+            pRT.sizeDelta = new Vector2(640, 520);
+            var pBg = panel.AddComponent<Image>();
+            pBg.color = new Color(0.05f, 0.07f, 0.1f, 0.95f);
+
+            MakeText(panel.transform, "Title", new Vector2(0.05f, 0.85f), new Vector2(0.95f, 0.97f), 44).text = "Pause";
+            var resume = MakeButton(panel.transform, "ResumeButton", new Vector2(0.1f, 0.66f), new Vector2(0.9f, 0.78f), "Resume");
+            var settingsBtn = MakeButton(panel.transform, "SettingsButton", new Vector2(0.1f, 0.51f), new Vector2(0.9f, 0.63f), "Settings");
+            var quit = MakeButton(panel.transform, "QuitButton", new Vector2(0.1f, 0.36f), new Vector2(0.9f, 0.48f), "Quit");
+            var version = MakeText(panel.transform, "VersionLabel", new Vector2(0.1f, 0.04f), new Vector2(0.9f, 0.12f), 20);
+            version.text = "v0.0.1"; version.alignment = TextAlignmentOptions.Center;
+
+            // Settings sub-panel (hidden by default).
+            var settingsPanel = new GameObject("SettingsPanel");
+            settingsPanel.transform.SetParent(modal.transform, false);
+            var sRT = settingsPanel.AddComponent<RectTransform>();
+            sRT.anchorMin = new Vector2(0.5f, 0.5f);
+            sRT.anchorMax = new Vector2(0.5f, 0.5f);
+            sRT.sizeDelta = new Vector2(640, 520);
+            var sBg = settingsPanel.AddComponent<Image>();
+            sBg.color = new Color(0.05f, 0.07f, 0.1f, 0.95f);
+
+            MakeText(settingsPanel.transform, "SettingsTitle", new Vector2(0.05f, 0.85f), new Vector2(0.95f, 0.97f), 40).text = "Settings";
+            MakeText(settingsPanel.transform, "SfxLabel", new Vector2(0.05f, 0.7f), new Vector2(0.4f, 0.8f), 24).text = "SFX";
+            var sfxSlider = MakeSlider(settingsPanel.transform, "SfxSlider", new Vector2(0.4f, 0.71f), new Vector2(0.95f, 0.79f));
+            MakeText(settingsPanel.transform, "MusicLabel", new Vector2(0.05f, 0.56f), new Vector2(0.4f, 0.66f), 24).text = "Music";
+            var musicSlider = MakeSlider(settingsPanel.transform, "MusicSlider", new Vector2(0.4f, 0.57f), new Vector2(0.95f, 0.65f));
+            MakeText(settingsPanel.transform, "LocaleLabel", new Vector2(0.05f, 0.42f), new Vector2(0.4f, 0.52f), 24).text = "Language";
+            var localeDD = MakeDropdown(settingsPanel.transform, "LocaleDropdown", new Vector2(0.4f, 0.43f), new Vector2(0.95f, 0.51f));
+            var back = MakeButton(settingsPanel.transform, "BackButton", new Vector2(0.1f, 0.08f), new Vector2(0.9f, 0.2f), "Back");
+
+            var so = new SerializedObject(pm);
+            so.FindProperty("_root").objectReferenceValue = modal;
+            so.FindProperty("_settingsPanel").objectReferenceValue = settingsPanel;
+            so.FindProperty("_openButton").objectReferenceValue = openBtn.GetComponent<Button>();
+            so.FindProperty("_resumeButton").objectReferenceValue = resume.GetComponent<Button>();
+            so.FindProperty("_settingsButton").objectReferenceValue = settingsBtn.GetComponent<Button>();
+            so.FindProperty("_backFromSettingsButton").objectReferenceValue = back.GetComponent<Button>();
+            so.FindProperty("_quitButton").objectReferenceValue = quit.GetComponent<Button>();
+            so.FindProperty("_sfxSlider").objectReferenceValue = sfxSlider;
+            so.FindProperty("_musicSlider").objectReferenceValue = musicSlider;
+            so.FindProperty("_localeDropdown").objectReferenceValue = localeDD;
+            so.FindProperty("_versionLabel").objectReferenceValue = version;
+            so.ApplyModifiedPropertiesWithoutUndo();
+
+            var prefab = PrefabUtility.SaveAsPrefabAsset(root, path);
+            Object.DestroyImmediate(root);
+            return prefab;
+        }
+
+        static Slider MakeSlider(Transform parent, string name, Vector2 anchorMin, Vector2 anchorMax)
+        {
+            var go = new GameObject(name);
+            go.transform.SetParent(parent, false);
+            var rt = go.AddComponent<RectTransform>();
+            rt.anchorMin = anchorMin; rt.anchorMax = anchorMax;
+            rt.offsetMin = Vector2.zero; rt.offsetMax = Vector2.zero;
+            var bg = go.AddComponent<Image>();
+            bg.color = new Color(1, 1, 1, 0.2f);
+            var slider = go.AddComponent<Slider>();
+            slider.minValue = 0f; slider.maxValue = 1f; slider.value = 0.5f;
+            var fillArea = new GameObject("Fill Area");
+            fillArea.transform.SetParent(go.transform, false);
+            var fillRT = fillArea.AddComponent<RectTransform>();
+            fillRT.anchorMin = Vector2.zero; fillRT.anchorMax = Vector2.one;
+            fillRT.offsetMin = Vector2.zero; fillRT.offsetMax = Vector2.zero;
+            var fill = new GameObject("Fill");
+            fill.transform.SetParent(fillArea.transform, false);
+            var fRT = fill.AddComponent<RectTransform>();
+            fRT.anchorMin = Vector2.zero; fRT.anchorMax = Vector2.one;
+            fRT.offsetMin = Vector2.zero; fRT.offsetMax = Vector2.zero;
+            var fImg = fill.AddComponent<Image>();
+            fImg.color = new Color(0.4f, 0.65f, 1f, 0.95f);
+            slider.fillRect = fRT;
+            slider.targetGraphic = bg;
+            return slider;
+        }
+
+        static TMP_Dropdown MakeDropdown(Transform parent, string name, Vector2 anchorMin, Vector2 anchorMax)
+        {
+            var go = new GameObject(name);
+            go.transform.SetParent(parent, false);
+            var rt = go.AddComponent<RectTransform>();
+            rt.anchorMin = anchorMin; rt.anchorMax = anchorMax;
+            rt.offsetMin = Vector2.zero; rt.offsetMax = Vector2.zero;
+            var bg = go.AddComponent<Image>();
+            bg.color = new Color(0.2f, 0.2f, 0.25f, 0.95f);
+            var dd = go.AddComponent<TMP_Dropdown>();
+            var label = MakeText(go.transform, "Label", new Vector2(0.05f, 0), new Vector2(0.95f, 1), 22);
+            dd.captionText = label;
+            dd.targetGraphic = bg;
+            return dd;
+        }
+
+        static GameObject BuildHUDPrefab(GameObject modalPrefab, GameObject pauseMenuPrefab)
         {
             var path = $"{PrefabsUI}/HUD.prefab";
             var root = new GameObject("HUD");
@@ -433,6 +584,14 @@ namespace AnimeEmpire.Editor
                 var modal = (GameObject)PrefabUtility.InstantiatePrefab(modalPrefab);
                 modal.transform.SetParent(root.transform, false);
                 modal.name = "BuildingModal";
+            }
+
+            // PauseMenu nested instance
+            if (pauseMenuPrefab != null)
+            {
+                var pm = (GameObject)PrefabUtility.InstantiatePrefab(pauseMenuPrefab);
+                pm.transform.SetParent(root.transform, false);
+                pm.name = "PauseMenu";
             }
 
             var prefab = PrefabUtility.SaveAsPrefabAsset(root, path);

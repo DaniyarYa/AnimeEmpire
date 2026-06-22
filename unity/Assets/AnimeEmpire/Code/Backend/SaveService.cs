@@ -18,7 +18,11 @@ namespace AnimeEmpire.Backend
         Dictionary<string, object> _state;
         bool _pending;
         float _debounceTimer;
+        ICloudSyncProvider _cloud = new LocalNoopProvider();
         string SavePath => Path.Combine(Application.persistentDataPath, SaveFileName);
+
+        public void SetCloudProvider(ICloudSyncProvider provider) => _cloud = provider ?? new LocalNoopProvider();
+        public ICloudSyncProvider CloudProvider => _cloud;
 
         void Awake()
         {
@@ -75,11 +79,19 @@ namespace AnimeEmpire.Backend
                 });
                 File.WriteAllText(SavePath, json);
                 EventBus.RaiseSavePersisted();
+                _ = TryUploadAsync();
             }
             catch (Exception e)
             {
                 Debug.LogWarning($"[SaveService] write failed: {e.Message}");
             }
+        }
+
+        async System.Threading.Tasks.Task TryUploadAsync()
+        {
+            if (_cloud == null || !_cloud.IsAuthenticated) return;
+            try { await _cloud.UploadAsync(_state); }
+            catch (Exception e) { Debug.LogWarning($"[SaveService] cloud upload failed: {e.Message}"); }
         }
 
         public void LoadState()

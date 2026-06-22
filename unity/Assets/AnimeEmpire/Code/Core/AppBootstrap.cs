@@ -10,7 +10,7 @@ namespace AnimeEmpire.Core
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         static void Spawn()
         {
-            if (Object.FindFirstObjectByType<GameState>() != null) return;
+            if (Object.FindAnyObjectByType<GameState>() != null) return;
 
             GameObject prefab = LoadFromAddressables() ?? Resources.Load<GameObject>(BootstrapAddress);
             if (prefab == null)

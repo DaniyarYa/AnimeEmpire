@@ -21,7 +21,7 @@ namespace AnimeEmpire.Utils
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         static void AutoSpawn()
         {
-            if (FindFirstObjectByType<DebugOverlay>() != null) return;
+            if (FindAnyObjectByType<DebugOverlay>() != null) return;
             var go = new GameObject("DebugOverlay");
             go.AddComponent<DebugOverlay>();
             DontDestroyOnLoad(go);

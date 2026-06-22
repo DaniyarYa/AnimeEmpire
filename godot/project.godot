@@ -12,14 +12,18 @@ config_version=5
 
 compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 
+[anime_empire]
+
+backend/config_url="https://animeempire-a8eee.web.app/config.json"
+
 [application]
 
 config/name="Anime Empire"
 config/description="Idle-tycoon в аниме-стиле. Mobile-first."
 config/version="0.0.1"
+run/main_scene="res://scenes/boot/boot.tscn"
 config/features=PackedStringArray("4.6", "GL Compatibility")
 config/icon="res://icon.svg"
-run/main_scene="res://scenes/boot/boot.tscn"
 
 [autoload]
 
@@ -40,19 +44,18 @@ window/size/viewport_width=1920
 window/size/viewport_height=1080
 window/stretch/mode="canvas_items"
 window/stretch/aspect="keep_height"
-window/handheld/orientation=0
-
-[gui]
-
-theme/custom="res://themes/main.theme.tres"
 
 [dotnet]
 
 project/assembly_name="Anime Empire"
 
-[anime_empire]
+[editor_plugins]
 
-backend/config_url="https://animeempire-a8eee.web.app/config.json"
+enabled=PackedStringArray("res://addons/godot_mcp/plugin.cfg")
+
+[gui]
+
+theme/custom="res://themes/main.theme.tres"
 
 [input_devices]
 

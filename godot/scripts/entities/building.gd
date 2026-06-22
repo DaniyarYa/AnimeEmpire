@@ -55,6 +55,23 @@ func set_worker(npc: Node) -> void:
 	_started = true  ## С NPC производство идёт автоматически.
 
 
+## Назначить уже существующего IDLE NPC на это здание.
+## Возвращает true если назначение прошло.
+func assign_worker(npc: Node) -> bool:
+	if _worker != null or npc == null:
+		return false
+	if not npc.has_method("assign"):
+		return false
+	# Фоновую production line гасим — будет производить NPC.
+	if _line != null:
+		EconomySim.unregister_line(_line)
+		_line = null
+	_worker = npc
+	_started = true
+	npc.assign(self)
+	return true
+
+
 func dismiss_worker() -> void:
 	if _worker == null:
 		return
@@ -62,6 +79,10 @@ func dismiss_worker() -> void:
 		_worker.dismiss()
 	_worker = null
 	_started = false
+	# Чистим возможную фоновую production line (если стартовали без NPC ранее).
+	if _line != null:
+		EconomySim.unregister_line(_line)
+		_line = null
 
 
 func get_line() -> Resource:

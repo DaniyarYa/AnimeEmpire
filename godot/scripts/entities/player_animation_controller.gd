@@ -51,11 +51,12 @@ const STATE_SPEED := {
 const DEFAULT_ANIM_SPEED := 1.0
 
 ## Анимации, которые должны зацикливаться. Подстроки имён.
-const LOOP_HINTS := ["Idle", "Walking", "Walk", "Running", "Run", "Carry"]
+## work_gather — loop'ится визуально пока NPC в STATE_WORK_GATHER (FSM выходит по capacity).
+const LOOP_HINTS := ["Idle", "Walking", "Walk", "Running", "Run", "Carry", "work_gather"]
 
 ## Анимации, которые НЕ должны зацикливаться.
-## work_sit/gather/stand — one-shot для FSM (replay через state_finished).
-const NO_LOOP_HINTS := ["work_sit", "work_gather", "work_stand", "Victory", "Cheer", "Celebrate"]
+## work_sit/stand — one-shot (FSM продвигается по timer в NPC._process_sit/_process_stand).
+const NO_LOOP_HINTS := ["work_sit", "work_stand", "Victory", "Cheer", "Celebrate"]
 
 ## Дополнительные FBX-файлы, из которых вытаскиваем анимации.
 ## Базовый player_avatar.fbx содержит только idle.
@@ -191,6 +192,12 @@ func override(state: String, duration: float = -1.0) -> void:
 	if duration > 0.0:
 		await get_tree().create_timer(duration).timeout
 		_override_state = ""
+
+
+## Сбросить активный override, чтобы update()/walk-blending снова работал.
+func clear_override() -> void:
+	_override_state = ""
+	_current_state = ""
 
 
 func _play_state(state: String) -> void:

@@ -12,19 +12,31 @@ extends CanvasItem
 @onready var _title_label: Label = $Panel/VBox/Title
 @onready var _info_label: Label = $Panel/VBox/Info
 @onready var _action_button: Button = $Panel/VBox/ActionButton
+@onready var _assign_button: Button = $Panel/VBox/AssignButton
 @onready var _dismiss_button: Button = $Panel/VBox/DismissButton
 @onready var _close_button: Button = $Panel/VBox/CloseButton
 
 var _current_building = null
+var _refresh_accum: float = 0.0
 
 
 func _ready() -> void:
 	hide()
 	_close_button.pressed.connect(_on_close_pressed)
 	_action_button.pressed.connect(_on_action_pressed)
+	_assign_button.pressed.connect(_on_assign_pressed)
 	_dismiss_button.pressed.connect(_on_dismiss_pressed)
 	EventBus.resource_produced.connect(_on_inventory_changed)
 	EventBus.resource_sold.connect(_on_resource_sold)
+
+
+func _process(delta: float) -> void:
+	if not visible:
+		return
+	_refresh_accum += delta
+	if _refresh_accum >= 0.5:
+		_refresh_accum = 0.0
+		_refresh()
 
 
 func show_for(building) -> void:
@@ -50,6 +62,13 @@ func _refresh() -> void:
 		_current_building.has_method("has_worker") and _current_building.has_worker()
 	)
 	_dismiss_button.visible = has_worker
+	# Assign-кнопка — для production-зданий без worker, если есть свободный NPC.
+	var can_assign: bool = (
+		not has_worker
+		and (b.category == "generator" or b.category == "processor")
+		and _find_available_npc(b.category) != null
+	)
+	_assign_button.visible = can_assign
 
 	match b.category:
 		"generator":
@@ -140,12 +159,45 @@ func _sell_all() -> void:
 	_refresh()
 
 
+func _on_assign_pressed() -> void:
+	if _current_building == null or _current_building.building_def == null:
+		return
+	var npc: Node = _find_available_npc(_current_building.building_def.category)
+	if npc == null:
+		return
+	if _current_building.has_method("assign_worker"):
+		_current_building.assign_worker(npc)
+	_refresh()
+
+
 func _on_dismiss_pressed() -> void:
 	if _current_building == null:
 		return
 	if _current_building.has_method("dismiss_worker"):
 		_current_building.dismiss_worker()
 	_refresh()
+
+
+## Найти свободный (IDLE) NPC чьей категории привязки совпадает с категорией здания.
+func _find_available_npc(building_category: String) -> Node:
+	var npcs = get_tree().get_nodes_in_group("npcs")
+	print("[Modal] _find_available_npc cat=", building_category, " npcs_in_group=", npcs.size())
+	for npc in npcs:
+		var avail: bool = npc.has_method("is_available") and npc.is_available()
+		var def: Resource = null
+		if "npc_def" in npc:
+			def = npc.npc_def
+		var attached: String = ""
+		if def != null and "attached_building_category" in def:
+			attached = String(def.attached_building_category)
+		print("[Modal]   npc=", npc.name, " avail=", avail, " attached=", attached)
+		if not avail:
+			continue
+		if def == null:
+			continue
+		if attached == "" or attached == building_category:
+			return npc
+	return null
 
 
 func _on_close_pressed() -> void:

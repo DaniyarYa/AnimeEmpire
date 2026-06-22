@@ -1,10 +1,10 @@
-[gd_scene load_steps=18 format=3 uid="uid://ducdedoy5lag8"]
+[gd_scene format=3 uid="uid://bk2vef3qpglkm"]
 
-[ext_resource type="Script" path="res://scenes/world/world.gd" id="1_world"]
-[ext_resource type="Script" path="res://scripts/utils/camera_rig.gd" id="2_camera"]
-[ext_resource type="PackedScene" path="res://scenes/entities/player.tscn" id="3_player"]
+[ext_resource type="Script" uid="uid://co07diwquy4xn" path="res://scenes/world/world.gd" id="1_world"]
+[ext_resource type="Script" uid="uid://drdjxx7s1vnbc" path="res://scripts/utils/camera_rig.gd" id="2_camera"]
+[ext_resource type="PackedScene" uid="uid://cipe2xh4nipr2" path="res://scenes/entities/player.tscn" id="3_player"]
 [ext_resource type="PackedScene" path="res://scenes/entities/building.tscn" id="4_building"]
-[ext_resource type="PackedScene" path="res://scenes/ui/widgets/virtual_joystick.tscn" id="5_joystick"]
+[ext_resource type="PackedScene" uid="uid://b5w3202w1cm3o" path="res://scenes/ui/widgets/virtual_joystick.tscn" id="5_joystick"]
 [ext_resource type="PackedScene" path="res://scenes/ui/building_modal.tscn" id="6_modal"]
 [ext_resource type="Resource" path="res://resources/buildings/wheat_farm.tres" id="7_wheat_farm"]
 [ext_resource type="Resource" path="res://resources/buildings/mill.tres" id="8_mill"]
@@ -32,7 +32,6 @@ size = Vector2(40, 40)
 
 [sub_resource type="StandardMaterial3D" id="GroundMaterial"]
 albedo_color = Color(0.498, 0.741, 0.404, 1)
-roughness = 1.0
 
 [sub_resource type="StyleBoxFlat" id="TopBarStyle"]
 content_margin_left = 16.0
@@ -40,89 +39,86 @@ content_margin_top = 12.0
 content_margin_right = 16.0
 content_margin_bottom = 12.0
 bg_color = Color(0.176, 0.165, 0.18, 0.85)
-corner_radius_top_left = 0
-corner_radius_top_right = 0
 corner_radius_bottom_right = 12
 corner_radius_bottom_left = 12
 
 [sub_resource type="LabelSettings" id="HUDLabel"]
 font_size = 28
-font_color = Color(1, 1, 1, 1)
 outline_size = 4
 outline_color = Color(0, 0, 0, 0.6)
 
-[node name="World" type="Node3D"]
+[node name="World" type="Node3D" unique_id=2005947654]
 script = ExtResource("1_world")
 
-[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=52965312]
 environment = SubResource("Environment_1")
 
-[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=1926829255]
 transform = Transform3D(0.707107, -0.5, 0.5, 0, 0.707107, 0.707107, -0.707107, -0.5, 0.5, 0, 6, 0)
 light_energy = 1.2
 
-[node name="Ground" type="MeshInstance3D" parent="."]
+[node name="Ground" type="MeshInstance3D" parent="." unique_id=1235351669]
 mesh = SubResource("PlaneMesh_1")
 surface_material_override/0 = SubResource("GroundMaterial")
 
-[node name="Player" parent="." instance=ExtResource("3_player")]
+[node name="Player" parent="." unique_id=1657688222 instance=ExtResource("3_player")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 4)
 
-[node name="WheatFarm" parent="." instance=ExtResource("4_building")]
+[node name="WheatFarm" parent="." unique_id=745827833 instance=ExtResource("4_building")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 0, -2)
 building_def = ExtResource("7_wheat_farm")
 
-[node name="GathererFarmer" parent="." instance=ExtResource("11_npc")]
+[node name="GathererFarmer" parent="." unique_id=1192056476 instance=ExtResource("11_npc")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 0, 2)
 assigned_building_path = NodePath("../WheatFarm")
 work_offset = Vector3(2.5, 0, 1.5)
 
-[node name="Mill" parent="." instance=ExtResource("4_building")]
+[node name="Mill" parent="." unique_id=1827395459 instance=ExtResource("4_building")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 0, -2)
 building_def = ExtResource("8_mill")
 
-[node name="Bakery" parent="." instance=ExtResource("4_building")]
+[node name="Bakery" parent="." unique_id=436646872 instance=ExtResource("4_building")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0, -2)
 building_def = ExtResource("9_bakery")
 
-[node name="Market" parent="." instance=ExtResource("4_building")]
+[node name="Market" parent="." unique_id=931013696 instance=ExtResource("4_building")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 0, -2)
 building_def = ExtResource("10_market")
 
-[node name="Camera3D" type="Camera3D" parent="."]
+[node name="Camera3D" type="Camera3D" parent="." unique_id=728632667]
 transform = Transform3D(1, 0, 0, 0, 0.866025, 0.5, 0, -0.5, 0.866025, 0, 8, 12)
 fov = 60.0
 script = ExtResource("2_camera")
-follow_offset = Vector3(0, 8, 12)
 
-[node name="HUD" type="CanvasLayer" parent="."]
+[node name="HUD" type="CanvasLayer" parent="." unique_id=28702404]
 
-[node name="TopBar" type="PanelContainer" parent="HUD"]
+[node name="TopBar" type="PanelContainer" parent="HUD" unique_id=1328719300]
 anchors_preset = 10
 anchor_right = 1.0
 offset_bottom = 80.0
 grow_horizontal = 2
 theme_override_styles/panel = SubResource("TopBarStyle")
 
-[node name="Margin" type="MarginContainer" parent="HUD/TopBar"]
+[node name="Margin" type="MarginContainer" parent="HUD/TopBar" unique_id=539775253]
 layout_mode = 2
 
-[node name="HBox" type="HBoxContainer" parent="HUD/TopBar/Margin"]
+[node name="HBox" type="HBoxContainer" parent="HUD/TopBar/Margin" unique_id=135458990]
 layout_mode = 2
 theme_override_constants/separation = 32
 
-[node name="GoldLabel" type="Label" parent="HUD/TopBar/Margin/HBox"]
+[node name="GoldLabel" type="Label" parent="HUD/TopBar/Margin/HBox" unique_id=1051888658]
 layout_mode = 2
 text = "💰 0"
 label_settings = SubResource("HUDLabel")
 
-[node name="InventoryLabel" type="Label" parent="HUD/TopBar/Margin/HBox"]
+[node name="InventoryLabel" type="Label" parent="HUD/TopBar/Margin/HBox" unique_id=399517446]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "🌾 0   🌾→ 0   🍞 0"
-horizontal_alignment = 2
 label_settings = SubResource("HUDLabel")
+horizontal_alignment = 2
 
-[node name="VirtualJoystick" parent="HUD" instance=ExtResource("5_joystick")]
+[node name="VirtualJoystick" parent="HUD" unique_id=858415127 instance=ExtResource("5_joystick")]
 
-[node name="BuildingModal" parent="HUD" instance=ExtResource("6_modal")]
+[node name="BuildingModal" parent="HUD" unique_id=1129653768 instance=ExtResource("6_modal")]
+layout_mode = 3

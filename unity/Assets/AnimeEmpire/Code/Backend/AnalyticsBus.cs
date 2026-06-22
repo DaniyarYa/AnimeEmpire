@@ -11,6 +11,7 @@ namespace AnimeEmpire.Backend
         public const int FlushAtQueueSize = 50;
 
         public static AnalyticsBus Instance { get; private set; }
+        public static IAnalyticsSink Sink { get; private set; } = new DebugLogSink();
 
         readonly List<Dictionary<string, object>> _queue = new();
         string _sessionId = "";
@@ -22,7 +23,7 @@ namespace AnimeEmpire.Backend
             Instance = this;
             _sessionId = GenerateSessionId();
             LogEvent("lifecycle.session.started", null);
-            Debug.Log($"[AnalyticsBus] ready, session={_sessionId}");
+            Debug.Log($"[AnalyticsBus] ready, session={_sessionId}, sink={Sink.GetType().Name}");
         }
 
         void OnDestroy() { if (Instance == this) Instance = null; }
@@ -35,6 +36,13 @@ namespace AnimeEmpire.Backend
 
         void OnApplicationPause(bool paused) { if (paused) { LogEvent("lifecycle.session.ended", null); Flush(); } }
         void OnApplicationQuit() { LogEvent("lifecycle.session.ended", null); Flush(); }
+
+        /// Swap analytics destination. Phase 2 Firebase: AnalyticsBus.RegisterSink(new FirebaseAnalyticsSink()).
+        public static void RegisterSink(IAnalyticsSink sink)
+        {
+            Sink = sink ?? new DebugLogSink();
+            Debug.Log($"[AnalyticsBus] sink registered: {Sink.GetType().Name}");
+        }
 
         public void LogEvent(string eventName, IDictionary<string, object> parameters)
         {
@@ -60,9 +68,11 @@ namespace AnimeEmpire.Backend
             if (_queue.Count == 0) { _timeSinceFlush = 0f; return; }
             foreach (var ev in _queue)
             {
-                if (ev.TryGetValue("event", out var n))
-                    Debug.Log($"[Analytics] {n}");
+                if (!ev.TryGetValue("event", out var nObj)) continue;
+                string name = nObj?.ToString() ?? "unknown";
+                Sink?.Send(name, ev);
             }
+            Sink?.Flush();
             _queue.Clear();
             _timeSinceFlush = 0f;
         }

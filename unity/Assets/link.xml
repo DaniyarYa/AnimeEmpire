@@ -2,4 +2,12 @@
   <assembly fullname="Newtonsoft.Json" preserve="all"/>
   <assembly fullname="System" preserve="all"/>
   <assembly fullname="mscorlib" preserve="all"/>
+  <!-- Firebase: preserve only if FIREBASE_ENABLED + SDK present.
+       Strip-safe noops when assemblies absent. -->
+  <assembly fullname="Firebase.App" preserve="all" ignoreIfMissing="1"/>
+  <assembly fullname="Firebase.Auth" preserve="all" ignoreIfMissing="1"/>
+  <assembly fullname="Firebase.Analytics" preserve="all" ignoreIfMissing="1"/>
+  <assembly fullname="Firebase.Crashlytics" preserve="all" ignoreIfMissing="1"/>
+  <assembly fullname="Firebase.RemoteConfig" preserve="all" ignoreIfMissing="1"/>
+  <assembly fullname="Firebase.Messaging" preserve="all" ignoreIfMissing="1"/>
 </linker>

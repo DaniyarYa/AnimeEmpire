@@ -1,0 +1,18 @@
+{
+  "name": "AnimeEmpire.Firebase",
+  "rootNamespace": "AnimeEmpire.Firebase",
+  "references": [
+    "AnimeEmpire.Runtime"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [
+    "FIREBASE_ENABLED"
+  ],
+  "versionDefines": [],
+  "noEngineReferences": false
+}

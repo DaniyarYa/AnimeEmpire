@@ -45,6 +45,9 @@ namespace AnimeEmpire.Editor
             { "ui.sell_all",              ("Sell all", "Продать всё") },
             { "ui.loading",               ("Loading...", "Загрузка...") },
             { "ui.entering_world",        ("Entering world...", "Запуск мира...") },
+            { "tutorial.welcome",         ("Welcome to Anime Empire! Tap to continue.", "Добро пожаловать в Anime Empire! Нажми чтобы продолжить.") },
+            { "tutorial.click_farm",      ("Tap your Wheat Farm to inspect it.", "Нажми на пшеничную ферму чтобы открыть её.") },
+            { "tutorial.sell_at_market",  ("Sell crops at the Market to earn gold.", "Продай урожай на рынке чтобы заработать золото.") },
         };
 
         [MenuItem("Tools/Anime Empire/Seed Localization (UI table)")]

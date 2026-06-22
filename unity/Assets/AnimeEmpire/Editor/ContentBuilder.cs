@@ -49,7 +49,9 @@ namespace AnimeEmpire.Editor
             var buildingPrefab = BuildBuildingPrefab();
             var npcPrefab = BuildNpcPrefab(npcController);
             var modalPrefab = BuildBuildingModalPrefab(resources);
-            var hudPrefab = BuildHUDPrefab(modalPrefab);
+            var pauseMenuPrefab = BuildPauseMenuPrefab();
+            var tutorialFlow = BuildTutorialFlow();
+            var hudPrefab = BuildHUDPrefab(modalPrefab, pauseMenuPrefab, tutorialFlow);
             BuildBootScene();
             BuildWorldScene(playerPrefab, buildingPrefab, npcPrefab, hudPrefab, buildings, npc);
             AddScenesToBuildSettings();
@@ -198,6 +200,33 @@ namespace AnimeEmpire.Editor
             CreateOrUpdate<IapCatalog>($"{ResourcesPath}/IapCatalog.asset", c =>
             {
                 c.Products = new System.Collections.Generic.List<IapProductDef> { gems100, gems500, noAds };
+            });
+        }
+
+        const string SoTutorial = "Assets/AnimeEmpire/ScriptableObjects/Tutorial";
+
+        static TutorialFlow BuildTutorialFlow()
+        {
+            EnsureFolder(SoTutorial);
+            var welcome = CreateOrUpdate<TutorialStep>($"{SoTutorial}/step_welcome.asset", s =>
+            {
+                s.Id = "welcome"; s.MessageKey = "tutorial.welcome";
+                s.Advance = TutorialAdvance.TapAnywhere;
+            });
+            var clickFarm = CreateOrUpdate<TutorialStep>($"{SoTutorial}/step_click_farm.asset", s =>
+            {
+                s.Id = "click_farm"; s.MessageKey = "tutorial.click_farm";
+                s.Advance = TutorialAdvance.BuildingClicked;
+                s.ExpectedBuildingId = "wheat_farm";
+            });
+            var sellAtMarket = CreateOrUpdate<TutorialStep>($"{SoTutorial}/step_sell.asset", s =>
+            {
+                s.Id = "sell_at_market"; s.MessageKey = "tutorial.sell_at_market";
+                s.Advance = TutorialAdvance.ResourceSold;
+            });
+            return CreateOrUpdate<TutorialFlow>($"{SoTutorial}/PhaseOneTutorial.asset", f =>
+            {
+                f.Steps = new System.Collections.Generic.List<TutorialStep> { welcome, clickFarm, sellAtMarket };
             });
         }
 
@@ -503,6 +532,44 @@ namespace AnimeEmpire.Editor
             return slider;
         }
 
+        static void BuildTutorialPanelInline(Transform parent, TutorialFlow flow)
+        {
+            var go = new GameObject("Tutorial");
+            go.transform.SetParent(parent, false);
+            var rt = go.AddComponent<RectTransform>();
+            rt.anchorMin = Vector2.zero; rt.anchorMax = Vector2.one;
+            rt.offsetMin = Vector2.zero; rt.offsetMax = Vector2.zero;
+
+            var modal = new GameObject("ModalRoot");
+            modal.transform.SetParent(go.transform, false);
+            var mRT = modal.AddComponent<RectTransform>();
+            mRT.anchorMin = new Vector2(0, 0); mRT.anchorMax = new Vector2(1, 0.18f);
+            mRT.offsetMin = new Vector2(40, 100); mRT.offsetMax = new Vector2(-40, 0);
+            var bg = modal.AddComponent<Image>();
+            bg.color = new Color(0, 0, 0, 0.78f);
+
+            var msg = MakeText(modal.transform, "Message", new Vector2(0.05f, 0.1f), new Vector2(0.95f, 0.9f), 32);
+            msg.alignment = TextAlignmentOptions.Center;
+            msg.text = "Welcome";
+
+            var tap = MakeButton(modal.transform, "TapAnywhereButton", new Vector2(0.7f, 0.05f), new Vector2(0.98f, 0.95f), "Tap");
+            // Transparent overlay covering most of modal so anywhere triggers.
+            var tapImg = tap.GetComponent<Image>(); if (tapImg != null) tapImg.color = new Color(0, 0, 0, 0.0f);
+
+            var skip = MakeButton(modal.transform, "SkipButton", new Vector2(0.0f, 0.0f), new Vector2(0.2f, 0.3f), "×");
+            var skipText = skip.GetComponentInChildren<TMP_Text>();
+            if (skipText != null) skipText.fontSize = 36;
+
+            var ctrl = go.AddComponent<TutorialController>();
+            var so = new SerializedObject(ctrl);
+            so.FindProperty("_flow").objectReferenceValue = flow;
+            so.FindProperty("_root").objectReferenceValue = modal;
+            so.FindProperty("_messageLabel").objectReferenceValue = msg;
+            so.FindProperty("_skipButton").objectReferenceValue = skip.GetComponent<Button>();
+            so.FindProperty("_tapAnywhereButton").objectReferenceValue = tap.GetComponent<Button>();
+            so.ApplyModifiedPropertiesWithoutUndo();
+        }
+
         static TMP_Dropdown MakeDropdown(Transform parent, string name, Vector2 anchorMin, Vector2 anchorMax)
         {
             var go = new GameObject(name);
@@ -519,7 +586,7 @@ namespace AnimeEmpire.Editor
             return dd;
         }
 
-        static GameObject BuildHUDPrefab(GameObject modalPrefab, GameObject pauseMenuPrefab)
+        static GameObject BuildHUDPrefab(GameObject modalPrefab, GameObject pauseMenuPrefab, TutorialFlow tutorialFlow)
         {
             var path = $"{PrefabsUI}/HUD.prefab";
             var root = new GameObject("HUD");
@@ -593,6 +660,9 @@ namespace AnimeEmpire.Editor
                 pm.transform.SetParent(root.transform, false);
                 pm.name = "PauseMenu";
             }
+
+            // Tutorial root (collapsed panel + message label).
+            BuildTutorialPanelInline(root.transform, tutorialFlow);
 
             var prefab = PrefabUtility.SaveAsPrefabAsset(root, path);
             Object.DestroyImmediate(root);

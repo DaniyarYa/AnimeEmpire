@@ -22,7 +22,7 @@ namespace AnimeEmpire.Firebase
             FirebaseMessaging.MessageReceived += OnMessageReceived;
             try
             {
-                var subscribe = await FirebaseMessaging.SubscribeAsync("all");
+                await FirebaseMessaging.SubscribeAsync("all");
                 Debug.Log("[FirebaseMessaging] subscribed to 'all' topic");
             }
             catch (System.Exception e)

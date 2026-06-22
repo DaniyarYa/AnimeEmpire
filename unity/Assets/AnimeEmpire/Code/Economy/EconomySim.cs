@@ -33,6 +33,23 @@ namespace AnimeEmpire.Economy
             if (Instance == this) Instance = null;
         }
 
+        long _pauseTimestamp;
+        void OnApplicationPause(bool paused)
+        {
+            if (paused) _pauseTimestamp = System.DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+            else if (_pauseTimestamp > 0)
+            {
+                long now = System.DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+                int elapsed = (int)(now - _pauseTimestamp);
+                _pauseTimestamp = 0;
+                if (elapsed > 0)
+                {
+                    var r = SimulateOffline(elapsed);
+                    Debug.Log($"[EconomySim] resumed: offline {elapsed}s ({r.ElapsedEffective:0}s effective), produced {r.Resources.Count} resources");
+                }
+            }
+        }
+
         void Update()
         {
             _accumulator += Time.deltaTime;
@@ -110,10 +127,33 @@ namespace AnimeEmpire.Economy
 
         public OfflineResult SimulateOffline(int elapsedSeconds)
         {
-            int capped = Mathf.Min(elapsedSeconds, OfflineCapSeconds);
+            int capped = Mathf.Max(0, Mathf.Min(elapsedSeconds, OfflineCapSeconds));
             float effective = capped * OfflineEfficiency;
-            // P2-003: full chunked offline sim TBD
-            return new OfflineResult { Gold = 0, Resources = new Dictionary<string, int>(), ElapsedEffective = effective };
+            var produced = new Dictionary<string, int>();
+
+            if (capped <= 0 || _lines.Count == 0)
+                return new OfflineResult { Gold = 0, Resources = produced, ElapsedEffective = effective };
+
+            for (int i = 0; i < _lines.Count; i++)
+            {
+                var line = _lines[i];
+                if (line == null || !line.Owned || line.BuildingDef == null || line.BuildingDef.OutputResource == null) continue;
+                float cycle = line.BuildingDef.BaseCycleSeconds * Mathf.Pow(ProductionLine.CycleDecayPerLevel, line.CurrentLevel - 1);
+                if (cycle < 0.0001f) continue;
+                int cycles = Mathf.FloorToInt(effective / cycle);
+                if (cycles <= 0) continue;
+                int amount = cycles * line.BuildingDef.OutputAmount;
+                string resId = line.BuildingDef.OutputResource.Id;
+                produced.TryGetValue(resId, out var prev);
+                produced[resId] = prev + amount;
+            }
+
+            // OnResourceProduced handler increments _inventory — emit once per batched resource.
+            foreach (var kv in produced)
+                EventBus.RaiseResourceProduced("offline", kv.Key, kv.Value);
+            if (produced.Count > 0) EventBus.RaiseSaveDirty();
+
+            return new OfflineResult { Gold = 0, Resources = produced, ElapsedEffective = effective };
         }
 
         public struct OfflineResult

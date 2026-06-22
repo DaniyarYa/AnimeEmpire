@@ -80,6 +80,17 @@ Match `../godot/` style: `feat(scope): description (P-XXX)` with optional ticket
 - Feature branches: `unity/feature-name` or `unity/p1-XXX-description`.
 - Mirror Godot ticket IDs (`P1-XXX`) for parity work.
 
+## Pre-commit hook
+
+Install repo-root hook to catch Library/ leaks + dotnet format check:
+
+```bash
+cp ../tools/git-hooks/pre-commit ../.git/hooks/pre-commit
+chmod +x ../.git/hooks/pre-commit
+```
+
+Hook blocks staged `Library/`, `Temp/`, `Logs/`, `obj/`, `Build/`, `UserSettings/`. Warns on >50MB files not LFS-tracked. Runs `dotnet format --verify-no-changes` on staged `*.cs` if dotnet available.
+
 ## What NOT to commit
 
 - `Library/`, `Temp/`, `Logs/`, `UserSettings/`, `obj/`, `*.csproj`, `*.sln`, `Build/`. All in `.gitignore`.

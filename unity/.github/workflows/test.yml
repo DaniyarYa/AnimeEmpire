@@ -29,6 +29,7 @@ jobs:
 
       - name: Run EditMode tests
         uses: game-ci/unity-test-runner@v4
+        id: edit-mode
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
@@ -37,9 +38,11 @@ jobs:
           projectPath: unity
           testMode: editmode
           githubToken: ${{ secrets.GITHUB_TOKEN }}
+          coverageOptions: 'generateAdditionalMetrics;generateHtmlReport;generateBadgeReport;assemblyFilters:+AnimeEmpire.Runtime,-AnimeEmpire.Editor,-*.Tests.*'
 
       - name: Run PlayMode tests
         uses: game-ci/unity-test-runner@v4
+        id: play-mode
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
@@ -48,3 +51,30 @@ jobs:
           projectPath: unity
           testMode: playmode
           githubToken: ${{ secrets.GITHUB_TOKEN }}
+          coverageOptions: 'generateAdditionalMetrics;generateHtmlReport;generateBadgeReport;assemblyFilters:+AnimeEmpire.Runtime,-AnimeEmpire.Editor,-*.Tests.*'
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: |
+            ${{ steps.edit-mode.outputs.artifactsPath }}
+            ${{ steps.play-mode.outputs.artifactsPath }}
+
+      - name: Upload coverage HTML
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-html
+          path: |
+            ${{ steps.edit-mode.outputs.coveragePath }}
+            ${{ steps.play-mode.outputs.coveragePath }}
+
+      - name: Upload coverage to Codecov
+        if: always()
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          directory: ${{ steps.edit-mode.outputs.coveragePath }}
+          fail_ci_if_error: false

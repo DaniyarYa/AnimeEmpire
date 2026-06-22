@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+# Anime Empire pre-commit hook
+# Install: cp tools/git-hooks/pre-commit .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit
+
+set -e
+
+STAGED=$(git diff --cached --name-only --diff-filter=ACM)
+
+# Block accidental Library/Temp/Build/obj from Unity.
+BAD=$(echo "$STAGED" | grep -E '^unity/(Library|Temp|Logs|obj|Build|UserSettings)/' || true)
+if [ -n "$BAD" ]; then
+    echo "ERROR: Unity-generated files staged. Remove from index:"
+    echo "$BAD"
+    echo "Run: git restore --staged <path>"
+    exit 1
+fi
+
+# Warn on large files >50MB unless LFS.
+LARGE=$(git diff --cached --name-only --diff-filter=ACM | while read f; do
+    [ -f "$f" ] || continue
+    size=$(stat -f%z "$f" 2>/dev/null || stat -c%s "$f" 2>/dev/null || echo 0)
+    if [ "$size" -gt 52428800 ]; then
+        if ! git check-attr filter -- "$f" 2>/dev/null | grep -q lfs; then
+            echo "$f ($size bytes)"
+        fi
+    fi
+done)
+if [ -n "$LARGE" ]; then
+    echo "WARN: large file(s) not LFS-tracked:"
+    echo "$LARGE"
+    echo "Consider tracking via .gitattributes / git lfs track."
+fi
+
+# dotnet format check on staged C# files (only if dotnet available).
+CS=$(echo "$STAGED" | grep -E '\.cs$' | grep '^unity/' || true)
+if [ -n "$CS" ] && command -v dotnet >/dev/null 2>&1; then
+    if [ -d "unity" ]; then
+        echo "Running dotnet format --verify-no-changes..."
+        cd unity
+        # Skip if no .sln (Unity generates one only when project opened).
+        if ls *.sln >/dev/null 2>&1; then
+            dotnet format --verify-no-changes --include $CS 2>/dev/null || {
+                echo "WARN: dotnet format would change files. Run 'dotnet format' to fix."
+            }
+        fi
+        cd ..
+    fi
+fi
+
+exit 0

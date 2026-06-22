@@ -51,8 +51,8 @@ crashlytics-build.properties
 # Configs stay (small + needed for builds), binaries don't (huge + regen on import).
 Assets/Firebase/
 Assets/Firebase.meta
-Assets/Plugins/iOS/Firebase/
-Assets/Plugins/Android/Firebase/
+Assets/Plugins/
+Assets/Plugins.meta
 Assets/ExternalDependencyManager/
 Assets/ExternalDependencyManager.meta
 Assets/Editor Default Resources/

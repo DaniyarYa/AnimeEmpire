@@ -21,7 +21,7 @@ namespace AnimeEmpire.Editor
             CheckUniqueIds<ResourceDef>(errors);
             CheckUniqueIds<NPCDef>(errors);
             CheckUniqueIds<IapProductDef>(errors);
-            CheckUniqueIds<TutorialStep>(errors);
+            CheckTutorialStepUniqueIds(errors);
 
             if (errors.Count == 0)
             {
@@ -42,6 +42,21 @@ namespace AnimeEmpire.Editor
                 var asset = AssetDatabase.LoadAssetAtPath<T>(path);
                 if (asset == null) continue;
                 rule(asset, path, errors);
+            }
+        }
+
+        static void CheckTutorialStepUniqueIds(List<string> errors)
+        {
+            var guids = AssetDatabase.FindAssets($"t:{nameof(TutorialStep)}");
+            var seen = new Dictionary<string, string>();
+            foreach (var guid in guids)
+            {
+                var path = AssetDatabase.GUIDToAssetPath(guid);
+                var asset = AssetDatabase.LoadAssetAtPath<TutorialStep>(path);
+                if (asset == null || string.IsNullOrEmpty(asset.Id)) continue;
+                if (seen.TryGetValue(asset.Id, out var existing))
+                    errors.Add($"TutorialStep Id '{asset.Id}' duplicated: {path} vs {existing}");
+                else seen[asset.Id] = path;
             }
         }
 

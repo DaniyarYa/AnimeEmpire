@@ -67,6 +67,8 @@ namespace AnimeEmpire.Economy
 
         public Dictionary<string, int> GetInventorySnapshot() => new(_inventory);
 
+        public IReadOnlyList<ProductionLine> GetRegisteredLines() => _lines;
+
         public int GetGold() => _gold;
 
         public int SellInventory(ResourceDef resource)

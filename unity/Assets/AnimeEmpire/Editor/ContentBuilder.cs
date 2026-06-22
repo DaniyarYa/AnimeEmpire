@@ -197,6 +197,7 @@ namespace AnimeEmpire.Editor
             go.AddComponent<AnalyticsBus>();
             go.AddComponent<MonetizationService>();
             go.AddComponent<AudioService>();
+            go.AddComponent<NotificationService>();
             go.AddComponent<SceneRouter>();
             var prefab = PrefabUtility.SaveAsPrefabAsset(go, path);
             Object.DestroyImmediate(go);

@@ -15,7 +15,7 @@ namespace AnimeEmpire.Firebase
             try
             {
                 await FirebaseRemoteConfig.DefaultInstance.FetchAndActivateAsync();
-                Version = (int)FirebaseRemoteConfig.DefaultInstance.Info.FetchTime.ToUnixTimeSeconds();
+                Version = (int)((System.DateTimeOffset)FirebaseRemoteConfig.DefaultInstance.Info.FetchTime).ToUnixTimeSeconds();
                 Debug.Log($"[FirebaseRemoteConfig] fetched, version={Version}");
                 return true;
             }

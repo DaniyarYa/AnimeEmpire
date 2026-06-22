@@ -16,7 +16,7 @@ namespace AnimeEmpire.Editor
             EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTargetGroup.Android, BuildTarget.Android);
             PlayerSettings.SetScriptingBackend(NamedBuildTargetFor(BuildTarget.Android), UnityEditor.ScriptingImplementation.IL2CPP);
             PlayerSettings.Android.targetArchitectures = UnityEditor.AndroidArchitecture.ARM64;
-            PlayerSettings.Android.minSdkVersion = UnityEditor.AndroidSdkVersions.AndroidApiLevel23;
+            PlayerSettings.Android.minSdkVersion = UnityEditor.AndroidSdkVersions.AndroidApiLevel25;
             PlayerSettings.Android.targetSdkVersion = UnityEditor.AndroidSdkVersions.AndroidApiLevelAuto;
             EditorUserBuildSettings.buildAppBundle = true;
             ApplyVersionSuffix();

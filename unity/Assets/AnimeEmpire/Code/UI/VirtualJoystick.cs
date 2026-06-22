@@ -64,7 +64,7 @@ namespace AnimeEmpire.UI
                 {
                     var t = touches[0];
                     if (InActiveZone(t.screenPosition))
-                        Start(t.screenPosition, t.finger.index);
+                        BeginTouch(t.screenPosition, t.finger.index);
                 }
                 else
                 {
@@ -86,7 +86,7 @@ namespace AnimeEmpire.UI
             var mouse = UnityEngine.InputSystem.Mouse.current;
             if (mouse == null) return;
             if (mouse.leftButton.wasPressedThisFrame && !_active && InActiveZone(mouse.position.ReadValue()))
-                Start(mouse.position.ReadValue(), -1);
+                BeginTouch(mouse.position.ReadValue(), -1);
             else if (mouse.leftButton.isPressed && _active && _touchFingerId == -1)
                 UpdateKnob(mouse.position.ReadValue());
             else if (mouse.leftButton.wasReleasedThisFrame && _active && _touchFingerId == -1)
@@ -95,7 +95,7 @@ namespace AnimeEmpire.UI
 
         bool InActiveZone(Vector2 screenPos) => screenPos.x < Screen.width * ActiveZoneWidthPct;
 
-        void Start(Vector2 at, int fingerId)
+        void BeginTouch(Vector2 at, int fingerId)
         {
             _active = true;
             _touchFingerId = fingerId;

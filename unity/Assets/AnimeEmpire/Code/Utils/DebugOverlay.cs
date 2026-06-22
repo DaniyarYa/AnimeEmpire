@@ -57,8 +57,9 @@ namespace AnimeEmpire.Utils
             GUILayout.Label($"Memory: {System.GC.GetTotalMemory(false) / (1024 * 1024)} MB");
             GUILayout.Label($"Scene: {UnityEngine.SceneManagement.SceneManager.GetActiveScene().name}");
 #if UNITY_EDITOR
-            GUILayout.Label($"Batches: {UnityStats.batches}  Tris: {UnityStats.triangles}");
-            GUILayout.Label($"DrawCalls: {UnityStats.drawCalls}  SetPass: {UnityStats.setPassCalls}");
+            // UnityStats API changed in Unity 6 — `batches` removed. Use drawCalls + tris + setPass.
+            GUILayout.Label($"DrawCalls: {UnityStats.drawCalls}  Tris: {UnityStats.triangles}");
+            GUILayout.Label($"SetPass: {UnityStats.setPassCalls}  Verts: {UnityStats.vertices}");
 #endif
             GUILayout.EndArea();
         }

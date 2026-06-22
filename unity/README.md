@@ -2,6 +2,36 @@
 
 Unity 6 LTS (URP, mobile) port of the Godot project at `../godot/`. Goal: behavior parity with Godot canonical implementation, evaluation track for mobile target.
 
+## Status
+
+**~20 commits shipped.** Phase 1 vertical slice + Phase 2 hooks all in tree:
+
+| System | Status |
+|---|---|
+| Production chain (wheat → flour → bread) | ✅ |
+| 4 buildings + 1 NPC FSM (8 states) | ✅ |
+| EconomySim 10 Hz tick + offline catch-up | ✅ |
+| Save/load (JSON, 2s debounce, OnPause flush) | ✅ |
+| RemoteConfig (HTTP w/ disk cache + defaults) | ✅ |
+| Localization (Unity Localization, 6 locales EN+RU seeded) | ✅ |
+| HUD + VirtualJoystick + BuildingModal + PauseMenu + Settings | ✅ |
+| Animator controllers + URP/Lit material + FBX postprocessor | ✅ |
+| Tutorial flow (3 sample steps) | ✅ |
+| Audio service stub + EventBus hooks | ✅ |
+| Mobile notifications (local, Unity Mobile Notifications package) | ✅ |
+| Addressables fallback in AppBootstrap | ✅ |
+| Save migration Godot save_0.bin → Unity save_0.json | ✅ |
+| Mobile safe area handling | ✅ |
+| IAP catalog SO (3 sample products) | ✅ |
+| CrashReporter interface + LocalLogReporter | ✅ |
+| Cloud sync provider interface | ✅ |
+| UIThemePalette (Godot main.theme.tres parity) | ✅ |
+| Asset validator + Debug overlay + Versioned builds | ✅ |
+| GameCI workflows (test + Android + iOS builds) | ✅ |
+| 40+ EditMode + PlayMode tests | ✅ |
+| Firebase swap layer (FIREBASE_ENABLED define gate) | ✅ — see [docs/firebase-setup.md](docs/firebase-setup.md) |
+| UGS Cloud Save, real IAP, FCM remote push | Phase 2+ — requires credentials |
+
 ## First-time setup
 
 1. Install **Unity 6 LTS (6000.0.x)** with **Android + iOS** build modules.

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "159493456134",
+    "project_id": "animeempire-a8eee",
+    "storage_bucket": "animeempire-a8eee.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:159493456134:android:f2da8a3a59741b49d55e87",
+        "android_client_info": {
+          "package_name": "com.animeempire.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyABXfdhFn_4AcVIxr91IqCxz37uZF6onCE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

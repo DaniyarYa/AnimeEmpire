@@ -47,5 +47,24 @@ sysinfo.txt
 # Crashlytics generated file
 crashlytics-build.properties
 
+# Firebase SDK — re-imported per dev via FirebaseSDK .unitypackages.
+# Configs stay (small + needed for builds), binaries don't (huge + regen on import).
+Assets/Firebase/
+Assets/Firebase.meta
+Assets/Plugins/iOS/Firebase/
+Assets/Plugins/Android/Firebase/
+Assets/ExternalDependencyManager/
+Assets/ExternalDependencyManager.meta
+Assets/Editor Default Resources/
+Assets/Editor Default Resources.meta
+
+# Firebase resolver
+ProjectSettings/GvhProjectSettings.xml
+
+# Firebase platform configs are public (per Google docs — ship with app),
+# but treat as creds for repo hygiene. Uncomment to gitignore if needed:
+# Assets/StreamingAssets/google-services.json
+# Assets/StreamingAssets/GoogleService-Info.plist
+
 # macOS
 .DS_Store

@@ -722,13 +722,45 @@ namespace AnimeEmpire.Editor
             scaler.referenceResolution = new Vector2(1920, 1080);
             canvasGO.AddComponent<GraphicRaycaster>();
 
+            var palette = Palette;
+            var bgColor = palette != null ? palette.ButtonNormal : new Color(1f, 0.722f, 0.302f, 1f);
+            var textColor = palette != null ? palette.TextDefault : new Color(0.176f, 0.165f, 0.18f, 1f);
+
+            // Golden full-screen background — mirrors godot/scenes/boot/boot.tscn ColorRect.
+            var bgGO = new GameObject("Background");
+            bgGO.transform.SetParent(canvasGO.transform, false);
+            var bgRT = bgGO.AddComponent<RectTransform>();
+            bgRT.anchorMin = Vector2.zero; bgRT.anchorMax = Vector2.one;
+            bgRT.offsetMin = Vector2.zero; bgRT.offsetMax = Vector2.zero;
+            var bgImg = bgGO.AddComponent<Image>();
+            bgImg.color = bgColor;
+            bgImg.raycastTarget = false;
+
+            // Centered title + status stack.
+            var titleGO = new GameObject("TitleLabel");
+            titleGO.transform.SetParent(canvasGO.transform, false);
+            var titleRT = titleGO.AddComponent<RectTransform>();
+            titleRT.anchorMin = new Vector2(0.5f, 0.5f); titleRT.anchorMax = new Vector2(0.5f, 0.5f);
+            titleRT.anchoredPosition = new Vector2(0f, 60f);
+            titleRT.sizeDelta = new Vector2(1200, 120);
+            var titleTmp = titleGO.AddComponent<TextMeshProUGUI>();
+            titleTmp.text = "Anime Empire";
+            titleTmp.fontSize = 88;
+            titleTmp.fontStyle = FontStyles.Bold;
+            titleTmp.alignment = TextAlignmentOptions.Center;
+            titleTmp.color = textColor;
+
             var statusGO = new GameObject("StatusLabel");
             statusGO.transform.SetParent(canvasGO.transform, false);
             var rt = statusGO.AddComponent<RectTransform>();
             rt.anchorMin = new Vector2(0.5f, 0.5f); rt.anchorMax = new Vector2(0.5f, 0.5f);
-            rt.sizeDelta = new Vector2(800, 100);
+            rt.anchoredPosition = new Vector2(0f, -40f);
+            rt.sizeDelta = new Vector2(800, 80);
             var tmp = statusGO.AddComponent<TextMeshProUGUI>();
-            tmp.text = "Загрузка..."; tmp.fontSize = 56; tmp.alignment = TextAlignmentOptions.Center; tmp.color = Color.white;
+            tmp.text = "Загрузка...";
+            tmp.fontSize = 48;
+            tmp.alignment = TextAlignmentOptions.Center;
+            tmp.color = textColor;
 
             var bootGO = new GameObject("Boot");
             var boot = bootGO.AddComponent<BootController>();

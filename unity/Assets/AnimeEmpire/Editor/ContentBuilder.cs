@@ -39,6 +39,7 @@ namespace AnimeEmpire.Editor
             var npc = BuildNpcDef();
             BuildBackendConfig();
             BuildIapCatalog();
+            BuildUIThemePalette();
             AnimatorControllerBuilder.RebuildBoth();
             LocalizationSeeder.Seed();
             MaterialBuilder.EnsurePlayerMaterial();
@@ -201,6 +202,24 @@ namespace AnimeEmpire.Editor
             {
                 c.Products = new System.Collections.Generic.List<IapProductDef> { gems100, gems500, noAds };
             });
+        }
+
+        static void BuildUIThemePalette()
+        {
+            // Mirror godot/themes/main.theme.tres palette. Re-creating asset preserves
+            // Inspector edits via CreateOrUpdate idempotency.
+            CreateOrUpdate<UIThemePalette>($"{ResourcesPath}/UIThemePalette.asset", p =>
+            {
+                p.ButtonNormal = new Color(1f, 0.722f, 0.302f, 1f);
+                p.ButtonHover = new Color(1f, 0.78f, 0.4f, 1f);
+                p.ButtonPressed = new Color(0.85f, 0.6f, 0.2f, 1f);
+                p.ButtonDisabled = new Color(0.612f, 0.576f, 0.596f, 1f);
+                p.TextDefault = new Color(0.176f, 0.165f, 0.18f, 1f);
+                p.TextPressed = new Color(1f, 1f, 1f, 1f);
+                p.TextDisabled = new Color(1f, 1f, 1f, 0.6f);
+                p.PanelBg = new Color(1f, 0.957f, 0.878f, 1f);
+            });
+            _cachedPalette = null; // force reload after rebuild
         }
 
         const string SoTutorial = "Assets/AnimeEmpire/ScriptableObjects/Tutorial";
@@ -412,6 +431,17 @@ namespace AnimeEmpire.Editor
             return tmp;
         }
 
+        static UIThemePalette _cachedPalette;
+        static UIThemePalette Palette
+        {
+            get
+            {
+                if (_cachedPalette != null) return _cachedPalette;
+                _cachedPalette = AssetDatabase.LoadAssetAtPath<UIThemePalette>($"{ResourcesPath}/UIThemePalette.asset");
+                return _cachedPalette;
+            }
+        }
+
         static GameObject MakeButton(Transform parent, string name, Vector2 anchorMin, Vector2 anchorMax, string label)
         {
             var go = new GameObject(name);
@@ -420,10 +450,21 @@ namespace AnimeEmpire.Editor
             rt.anchorMin = anchorMin; rt.anchorMax = anchorMax;
             rt.offsetMin = Vector2.zero; rt.offsetMax = Vector2.zero;
             var img = go.AddComponent<Image>();
-            img.color = new Color(0.2f, 0.2f, 0.25f, 0.9f);
+            var p = Palette;
+            img.color = p != null ? p.ButtonNormal : new Color(0.2f, 0.2f, 0.25f, 0.9f);
             var btn = go.AddComponent<Button>();
             btn.targetGraphic = img;
+            if (p != null)
+            {
+                var colors = btn.colors;
+                colors.normalColor = p.ButtonNormal;
+                colors.highlightedColor = p.ButtonHover;
+                colors.pressedColor = p.ButtonPressed;
+                colors.disabledColor = p.ButtonDisabled;
+                btn.colors = colors;
+            }
             var tmp = MakeText(go.transform, "Label", new Vector2(0, 0), new Vector2(1, 1), 24);
+            if (p != null) tmp.color = p.TextDefault;
             tmp.text = label;
             return go;
         }

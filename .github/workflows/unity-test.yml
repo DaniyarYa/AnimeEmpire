@@ -5,11 +5,11 @@ on:
     branches: [main]
     paths:
       - 'unity/**'
-      - '.github/workflows/test.yml'
+      - '.github/workflows/unity-test.yml'
   pull_request:
     paths:
       - 'unity/**'
-      - '.github/workflows/test.yml'
+      - '.github/workflows/unity-test.yml'
 
 jobs:
   test:

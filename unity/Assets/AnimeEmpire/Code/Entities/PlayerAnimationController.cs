@@ -1,9 +1,12 @@
 using System;
-using System.Collections;
 using UnityEngine;
 
 namespace AnimeEmpire.Entities
 {
+    /// Animator-parameter driven. Locomotion via `Speed` float (idle↔walk↔run
+    /// transitions in Animator). Discrete actions via triggers (Sit, Gather,
+    /// Stand, Celebrate, ToIdle). Carrying flag via Bool. work_sit auto-
+    /// transitions to work_gather inside Animator (exit time on sit clip).
     public class PlayerAnimationController : MonoBehaviour
     {
         public const string StateIdle = "idle";
@@ -17,69 +20,71 @@ namespace AnimeEmpire.Entities
 
         public const float SpeedThresholdWalk = 0.05f;
         public const float SpeedThresholdRun = 0.85f;
-        public const float CrossFadeDuration = 0.1f;
+
+        // Animator parameter names — must match AnimatorControllerBuilder.
+        public const string ParamSpeed = "Speed";
+        public const string ParamCarrying = "Carrying";
+        public const string TriggerSit = "Sit";
+        public const string TriggerGather = "Gather";
+        public const string TriggerStand = "Stand";
+        public const string TriggerCelebrate = "Celebrate";
+        public const string TriggerIdle = "ToIdle";
 
         [SerializeField] Animator _animator;
         public event Action<string> StateFinished;
 
-        string _currentState = "";
-        string _overrideState = "";
+        static readonly int HashSpeed = Animator.StringToHash(ParamSpeed);
+        static readonly int HashCarrying = Animator.StringToHash(ParamCarrying);
+        static readonly int HashSit = Animator.StringToHash(TriggerSit);
+        static readonly int HashGather = Animator.StringToHash(TriggerGather);
+        static readonly int HashStand = Animator.StringToHash(TriggerStand);
+        static readonly int HashCelebrate = Animator.StringToHash(TriggerCelebrate);
+        static readonly int HashIdle = Animator.StringToHash(TriggerIdle);
 
         void Awake()
         {
             if (_animator == null) _animator = GetComponentInChildren<Animator>();
         }
 
-        void Start() => PlayState(StateIdle);
-
         public void UpdateSpeed(float speedNormalized)
         {
-            if (!string.IsNullOrEmpty(_overrideState)) return;
-            string target = StateIdle;
-            if (speedNormalized >= SpeedThresholdRun) target = StateRun;
-            else if (speedNormalized >= SpeedThresholdWalk) target = StateWalk;
-            PlayState(target);
+            if (_animator == null) return;
+            _animator.SetFloat(HashSpeed, Mathf.Clamp01(speedNormalized));
         }
 
-        public void Override(string state, float duration = -1f)
+        public void SetCarrying(bool carrying)
         {
-            _overrideState = state;
-            _currentState = "";
-            PlayState(state);
-            if (duration > 0f) StartCoroutine(ClearOverrideAfter(duration));
+            if (_animator == null) return;
+            _animator.SetBool(HashCarrying, carrying);
         }
 
-        IEnumerator ClearOverrideAfter(float t)
+        /// Discrete state trigger. Animator transitions w/ Any State → target.
+        public void Trigger(string state)
         {
-            yield return new WaitForSeconds(t);
-            _overrideState = "";
+            if (_animator == null) return;
+            int hash = state switch
+            {
+                StateWorkSit => HashSit,
+                StateWorkGather => HashGather,
+                StateWorkStand => HashStand,
+                StateCelebrate => HashCelebrate,
+                StateIdle => HashIdle,
+                _ => 0,
+            };
+            if (hash != 0) _animator.SetTrigger(hash);
         }
+
+        /// Backward-compat: Override = Trigger discrete state.
+        public void Override(string state, float duration = -1f) => Trigger(state);
 
         public void ClearOverride()
         {
-            _overrideState = "";
-            _currentState = "";
-        }
-
-        void PlayState(string state)
-        {
-            if (state == _currentState) return;
             if (_animator == null) return;
-            _currentState = state;
-            int hash = Animator.StringToHash(state);
-            if (!_animator.HasState(0, hash))
-            {
-                if (state != StateIdle) PlayState(StateIdle);
-                return;
-            }
-            _animator.CrossFadeInFixedTime(hash, CrossFadeDuration);
+            _animator.SetTrigger(HashIdle);
         }
 
-        // Hooked from AnimationEvent at end of one-shot clips (work_sit, work_stand, celebrate).
-        // Signature: OnAnimationStateFinished(string stateName).
+        // Animation Event hook (end of one-shot clips).
         public void OnAnimationStateFinished(string state)
-        {
-            StateFinished?.Invoke(string.IsNullOrEmpty(_overrideState) ? state : _overrideState);
-        }
+            => StateFinished?.Invoke(state);
     }
 }

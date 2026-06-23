@@ -344,6 +344,16 @@ namespace AnimeEmpire.Editor
             model.transform.SetParent(go.transform, false);
             model.transform.localScale = new Vector3(2.5f, 2.5f, 2.5f);
             model.transform.localPosition = new Vector3(0, 1.25f, 0);
+            // Override built-in default material w/ URP/Lit + cream panel color from palette.
+            var urpShader = Shader.Find("Universal Render Pipeline/Lit");
+            if (urpShader != null)
+            {
+                var p = Palette;
+                var mat = new Material(urpShader) { name = "BuildingMat" };
+                mat.color = p != null ? p.PanelBg : new Color(0.85f, 0.78f, 0.6f, 1f);
+                model.GetComponent<MeshRenderer>().sharedMaterial = mat;
+                AssetDatabase.CreateAsset(mat, $"{PrefabsEntities}/BuildingMat.mat");
+            }
             var col = go.AddComponent<BoxCollider>();
             col.size = new Vector3(2.5f, 2.5f, 2.5f);
             col.center = new Vector3(0, 1.25f, 0);

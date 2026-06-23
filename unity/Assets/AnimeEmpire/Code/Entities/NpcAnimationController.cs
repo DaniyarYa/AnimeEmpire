@@ -1,18 +1,22 @@
 using System;
-using System.Collections;
 using UnityEngine;
 
 namespace AnimeEmpire.Entities
 {
+    /// Same Animator-parameter contract as PlayerAnimationController.
+    /// NPC FSM drives via Speed float + work cycle triggers.
     public class NpcAnimationController : MonoBehaviour
     {
-        public const float CrossFadeDuration = 0.1f;
-
         [SerializeField] Animator _animator;
         public event Action<string> StateFinished;
 
-        string _currentState = "";
-        string _overrideState = "";
+        static readonly int HashSpeed = Animator.StringToHash(PlayerAnimationController.ParamSpeed);
+        static readonly int HashCarrying = Animator.StringToHash(PlayerAnimationController.ParamCarrying);
+        static readonly int HashSit = Animator.StringToHash(PlayerAnimationController.TriggerSit);
+        static readonly int HashGather = Animator.StringToHash(PlayerAnimationController.TriggerGather);
+        static readonly int HashStand = Animator.StringToHash(PlayerAnimationController.TriggerStand);
+        static readonly int HashCelebrate = Animator.StringToHash(PlayerAnimationController.TriggerCelebrate);
+        static readonly int HashIdle = Animator.StringToHash(PlayerAnimationController.TriggerIdle);
 
         void Awake()
         {
@@ -21,44 +25,40 @@ namespace AnimeEmpire.Entities
 
         public void UpdateSpeed(float speedNormalized)
         {
-            if (!string.IsNullOrEmpty(_overrideState)) return;
-            string target = PlayerAnimationController.StateIdle;
-            if (speedNormalized >= PlayerAnimationController.SpeedThresholdRun) target = PlayerAnimationController.StateRun;
-            else if (speedNormalized >= PlayerAnimationController.SpeedThresholdWalk) target = PlayerAnimationController.StateWalk;
-            Play(target);
+            if (_animator == null) return;
+            _animator.SetFloat(HashSpeed, Mathf.Clamp01(speedNormalized));
         }
 
-        public void Override(string state, float duration = -1f)
+        public void SetCarrying(bool carrying)
         {
-            _overrideState = state;
-            _currentState = "";
-            Play(state);
-            if (duration > 0f) StartCoroutine(ClearOverrideAfter(duration));
+            if (_animator == null) return;
+            _animator.SetBool(HashCarrying, carrying);
         }
 
-        IEnumerator ClearOverrideAfter(float t)
+        public void Trigger(string state)
         {
-            yield return new WaitForSeconds(t);
-            _overrideState = "";
+            if (_animator == null) return;
+            int hash = state switch
+            {
+                PlayerAnimationController.StateWorkSit => HashSit,
+                PlayerAnimationController.StateWorkGather => HashGather,
+                PlayerAnimationController.StateWorkStand => HashStand,
+                PlayerAnimationController.StateCelebrate => HashCelebrate,
+                PlayerAnimationController.StateIdle => HashIdle,
+                _ => 0,
+            };
+            if (hash != 0) _animator.SetTrigger(hash);
         }
+
+        public void Override(string state, float duration = -1f) => Trigger(state);
 
         public void ClearOverride()
         {
-            _overrideState = "";
-            _currentState = "";
-        }
-
-        void Play(string state)
-        {
-            if (state == _currentState) return;
             if (_animator == null) return;
-            _currentState = state;
-            int hash = Animator.StringToHash(state);
-            if (!_animator.HasState(0, hash)) return;
-            _animator.CrossFadeInFixedTime(hash, CrossFadeDuration);
+            _animator.SetTrigger(HashIdle);
         }
 
         public void OnAnimationStateFinished(string state)
-            => StateFinished?.Invoke(string.IsNullOrEmpty(_overrideState) ? state : _overrideState);
+            => StateFinished?.Invoke(state);
     }
 }

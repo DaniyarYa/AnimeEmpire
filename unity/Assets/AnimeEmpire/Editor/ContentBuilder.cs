@@ -801,18 +801,22 @@ namespace AnimeEmpire.Editor
                 return inst;
             }
 
-            var player = Spawn(playerPrefab, "Player", new Vector3(0, 0, 4));
-
-            var wheatFarm = Spawn(buildingPrefab, "WheatFarm", new Vector3(-6, 0, -2));
+            // Buildings stay on north side (positive Z = far from camera).
+            // Player + NPC spawn on south side (between camera and buildings) so they
+            // render in front of the buildings from the camera POV. Camera follows
+            // player w/ FollowOffset(0, 8, -12) — by placing player south of buildings,
+            // both player and buildings end up in frame w/ buildings as backdrop.
+            var wheatFarm = Spawn(buildingPrefab, "WheatFarm", new Vector3(-6, 0, 4));
             wheatFarm.GetComponent<Building>().Def = b.WheatFarm;
-            var mill = Spawn(buildingPrefab, "Mill", new Vector3(-2, 0, -2));
+            var mill = Spawn(buildingPrefab, "Mill", new Vector3(-2, 0, 4));
             mill.GetComponent<Building>().Def = b.Mill;
-            var bakery = Spawn(buildingPrefab, "Bakery", new Vector3(2, 0, -2));
+            var bakery = Spawn(buildingPrefab, "Bakery", new Vector3(2, 0, 4));
             bakery.GetComponent<Building>().Def = b.Bakery;
-            var market = Spawn(buildingPrefab, "Market", new Vector3(6, 0, -2));
+            var market = Spawn(buildingPrefab, "Market", new Vector3(6, 0, 4));
             market.GetComponent<Building>().Def = b.Market;
 
-            var npc = Spawn(npcPrefab, "GathererFarmer", new Vector3(-6, 0, 2));
+            var player = Spawn(playerPrefab, "Player", new Vector3(0, 0, -2));
+            var npc = Spawn(npcPrefab, "GathererFarmer", new Vector3(-3, 0, -2));
             var npcComp = npc.GetComponent<NPC>();
             npcComp.Def = npcDef;
             npcComp.AssignedBuilding = wheatFarm.GetComponent<Building>();
@@ -822,11 +826,11 @@ namespace AnimeEmpire.Editor
             cam.tag = "MainCamera";
             cam.backgroundColor = new Color(0.40f, 0.65f, 0.85f);
             cam.clearFlags = CameraClearFlags.SolidColor;
-            cam.transform.position = new Vector3(0, 8, -8);
-            cam.transform.LookAt(player.transform.position);
+            cam.transform.position = new Vector3(0, 9, -12);
+            cam.transform.LookAt(new Vector3(0, 0, 2));
             var rig = camGO.AddComponent<CameraRig>();
             rig.FollowTarget = player.transform;
-            rig.FollowOffset = new Vector3(0, 8, -12);
+            rig.FollowOffset = new Vector3(0, 9, -10);
             camGO.AddComponent<UnityEngine.AudioListener>();
             camGO.AddComponent<PhysicsRaycaster>();
 

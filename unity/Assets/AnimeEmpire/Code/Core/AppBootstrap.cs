@@ -12,7 +12,9 @@ namespace AnimeEmpire.Core
         {
             if (Object.FindAnyObjectByType<GameState>() != null) return;
 
-            GameObject prefab = LoadFromAddressables() ?? Resources.Load<GameObject>(BootstrapAddress);
+            // Resources first (default, no runtime data dependency). Addressables
+            // only consulted when Resources misses — Phase 2 DLC bundles plug in here.
+            GameObject prefab = Resources.Load<GameObject>(BootstrapAddress) ?? LoadFromAddressables();
             if (prefab == null)
             {
                 Debug.LogWarning("[AppBootstrap] Bootstrap prefab missing from Addressables AND Resources/. Run Tools → Anime Empire → Build Phase 1 Content.");
@@ -25,6 +27,9 @@ namespace AnimeEmpire.Core
 
         static GameObject LoadFromAddressables()
         {
+            // Skip Addressables if no settings authored — avoids noisy
+            // "RuntimeData is null" error cascade.
+            if (Addressables.ResourceLocators == null) return null;
             try
             {
                 var handle = Addressables.LoadAssetAsync<GameObject>(BootstrapAddress);
@@ -33,7 +38,6 @@ namespace AnimeEmpire.Core
             }
             catch
             {
-                // Addressables not initialized OR address not authored — fall back to Resources.
                 return null;
             }
         }

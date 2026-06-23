@@ -46,6 +46,13 @@ namespace AnimeEmpire.Editor
 
             EditorSettings.serializationMode = SerializationMode.ForceText;
 
+            // Auto-setup URP pipeline if not already assigned. Avoids the
+            // "all materials pink" state on first project open.
+            if (UnityEngine.Rendering.GraphicsSettings.defaultRenderPipeline == null)
+            {
+                URPSetup.Setup();
+            }
+
             Debug.Log("[AnimeEmpire] Project bootstrap settings applied. Run Tools → Anime Empire → Build Phase 1 Content to author SOs/scenes/prefabs.");
         }
     }

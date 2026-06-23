@@ -44,6 +44,10 @@ namespace AnimeEmpire.Editor
             PlayerSettings.SetScriptingBackend(NamedBuildTarget.iOS, ScriptingImplementation.IL2CPP);
             PlayerSettings.iOS.targetOSVersionString = "13.0";
 
+            // Editor + builds: keep simulation running when Game window loses focus.
+            // Avoids "frozen at frame 1" while Editor not focused.
+            PlayerSettings.runInBackground = true;
+
             EditorSettings.serializationMode = SerializationMode.ForceText;
 
             // Auto-setup URP pipeline if not already assigned. Avoids the

@@ -52,6 +52,14 @@ namespace AnimeEmpire.Entities
             _agent.stoppingDistance = ArrivalThreshold;
             _agent.autoBraking = true;
 
+            // Safety warp to nearest NavMesh point — agent often spawns ε above/below
+            // surface and reports isOnNavMesh=false even when navmesh exists below.
+            if (!_agent.isOnNavMesh
+                && NavMesh.SamplePosition(transform.position, out var hit, 5f, NavMesh.AllAreas))
+            {
+                _agent.Warp(hit.position);
+            }
+
             if (_anim != null) _anim.StateFinished += OnAnimStateFinished;
             if (AssignedBuilding != null)
             {

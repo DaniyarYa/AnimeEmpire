@@ -23,7 +23,13 @@ namespace AnimeEmpire.Data
         public Color PanelBg = new(1f, 0.957f, 0.878f, 1f);
 
         [Header("Font sizes")]
-        public int FontSizeDefault = 16;
-        public int FontSizeButton = 16;
+        public int FontSizeDefault = 28;
+        public int FontSizeButton = 32;
+        public int FontSizeTitle = 56;
+
+        [Header("Layout")]
+        public int PanelPadding = 24;
+        public int Spacing = 16;
+        public int ButtonMinHeight = 72;
     }
 }

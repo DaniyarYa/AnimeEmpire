@@ -48,8 +48,8 @@ namespace AnimeEmpire.Tests.PlayMode
 
             _npcGO = new GameObject("NPC");
             _npcGO.transform.position = new Vector3(0, 1, 0);
-            var cc = _npcGO.AddComponent<CharacterController>();
-            cc.height = 1.6f; cc.radius = 0.3f; cc.center = new Vector3(0, 0.8f, 0);
+            var agent = _npcGO.AddComponent<UnityEngine.AI.NavMeshAgent>();
+            agent.height = 1.6f; agent.radius = 0.3f; agent.speed = 6f;
             var npc = _npcGO.AddComponent<NPC>();
             npc.Def = npcDef;
             npc.AssignedBuilding = farm;

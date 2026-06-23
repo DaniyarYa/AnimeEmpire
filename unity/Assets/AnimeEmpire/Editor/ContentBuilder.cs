@@ -218,6 +218,12 @@ namespace AnimeEmpire.Editor
                 p.TextPressed = new Color(1f, 1f, 1f, 1f);
                 p.TextDisabled = new Color(1f, 1f, 1f, 0.6f);
                 p.PanelBg = new Color(1f, 0.957f, 0.878f, 1f);
+                p.FontSizeDefault = 28;
+                p.FontSizeButton = 32;
+                p.FontSizeTitle = 56;
+                p.PanelPadding = 24;
+                p.Spacing = 16;
+                p.ButtonMinHeight = 72;
             });
             _cachedPalette = null; // force reload after rebuild
         }
@@ -357,6 +363,16 @@ namespace AnimeEmpire.Editor
             var col = go.AddComponent<BoxCollider>();
             col.size = new Vector3(2.5f, 2.5f, 2.5f);
             col.center = new Vector3(0, 1.25f, 0);
+
+            // NavMeshObstacle so NPCs path around. Carve = true cuts NavMesh dynamically
+            // (Phase 2 supports drag-placement; static building today doesn't need carve
+            // strictly, but it's cheap insurance).
+            var obstacle = go.AddComponent<UnityEngine.AI.NavMeshObstacle>();
+            obstacle.shape = UnityEngine.AI.NavMeshObstacleShape.Box;
+            obstacle.size = new Vector3(2.5f, 2.5f, 2.5f);
+            obstacle.center = new Vector3(0, 1.25f, 0);
+            obstacle.carving = true;
+
             var prefab = PrefabUtility.SaveAsPrefabAsset(go, path);
             Object.DestroyImmediate(go);
             return prefab;
@@ -366,8 +382,13 @@ namespace AnimeEmpire.Editor
         {
             var path = $"{PrefabsEntities}/NPC.prefab";
             var go = new GameObject("NPC");
-            var cc = go.AddComponent<CharacterController>();
-            cc.height = 1.6f; cc.radius = 0.3f; cc.center = new Vector3(0, 0.8f, 0);
+            // NavMeshAgent handles motion + obstacle avoidance.
+            var agent = go.AddComponent<UnityEngine.AI.NavMeshAgent>();
+            agent.height = 1.6f; agent.radius = 0.3f; agent.baseOffset = 0f;
+            agent.speed = 2f; agent.angularSpeed = 540f; agent.acceleration = 12f;
+            agent.stoppingDistance = NPC.ArrivalThreshold;
+            agent.autoBraking = true;
+            agent.obstacleAvoidanceType = UnityEngine.AI.ObstacleAvoidanceType.LowQualityObstacleAvoidance;
             var npc = go.AddComponent<NPC>();
             GameObject model = TryInstantiatePlayerModel(go, controller, out var animator);
             var animCtrl = (model != null ? model : go).AddComponent<NpcAnimationController>();
@@ -435,10 +456,29 @@ namespace AnimeEmpire.Editor
             rt.offsetMin = Vector2.zero; rt.offsetMax = Vector2.zero;
             var tmp = go.AddComponent<TextMeshProUGUI>();
             tmp.text = name;
+            var p = Palette;
             tmp.fontSize = size;
-            tmp.color = Color.white;
+            // Choose color by parent context: top bar uses light text on dark bg,
+            // panels (modal/pause) use dark text on cream. Heuristic: parent has Image
+            // and Image color brightness > 0.5 → dark text, else light text.
+            tmp.color = ParentIsLightPanel(parent) && p != null ? p.TextDefault : Color.white;
             tmp.alignment = TextAlignmentOptions.Center;
             return tmp;
+        }
+
+        static bool ParentIsLightPanel(Transform t)
+        {
+            while (t != null)
+            {
+                var img = t.GetComponent<Image>();
+                if (img != null)
+                {
+                    var c = img.color;
+                    return (c.r + c.g + c.b) / 3f > 0.5f && c.a > 0.5f;
+                }
+                t = t.parent;
+            }
+            return false;
         }
 
         static UIThemePalette _cachedPalette;
@@ -802,6 +842,7 @@ namespace AnimeEmpire.Editor
             var gMat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
             gMat.color = new Color(0.498f, 0.741f, 0.404f);
             ground.GetComponent<MeshRenderer>().sharedMaterial = gMat;
+            NavMeshBakeStep.MarkNavStatic(ground);
 
             GameObject Spawn(GameObject prefab, string nm, Vector3 pos)
             {
@@ -824,6 +865,9 @@ namespace AnimeEmpire.Editor
             bakery.GetComponent<Building>().Def = b.Bakery;
             var market = Spawn(buildingPrefab, "Market", new Vector3(6, 0, 4));
             market.GetComponent<Building>().Def = b.Market;
+
+            // Buildings carve NavMesh — bake AFTER buildings spawn but BEFORE NPC.
+            NavMeshBakeStep.Bake();
 
             var player = Spawn(playerPrefab, "Player", new Vector3(0, 0, -2));
             var npc = Spawn(npcPrefab, "GathererFarmer", new Vector3(-3, 0, -2));

@@ -2,17 +2,16 @@ using System.Collections.Generic;
 using AnimeEmpire.Core;
 using AnimeEmpire.Data;
 using UnityEngine;
+using UnityEngine.AI;
 
 namespace AnimeEmpire.Entities
 {
     public enum NpcState { Idle, Move, WorkSit, WorkGather, WorkStand, Carry, Deliver, Return }
 
-    [RequireComponent(typeof(CharacterController))]
+    [RequireComponent(typeof(NavMeshAgent))]
     public class NPC : MonoBehaviour
     {
         public const float ArrivalThreshold = 0.5f;
-        public const float AccelLerp = 10f;
-        public const float RotateLerp = 10f;
         public const float DeliverDuration = 0.4f;
         public const float SitDuration = 1f;
         public const float StandDuration = 1f;
@@ -24,31 +23,35 @@ namespace AnimeEmpire.Entities
 
         [SerializeField] NpcAnimationController _anim;
 
-        CharacterController _cc;
+        NavMeshAgent _agent;
         NpcState _state = NpcState.Idle;
-        Vector3 _velocity;
         Vector3 _targetPos;
         Vector3 _workPos;
         Building _storageTarget;
         float _workTimer;
         float _workDuration = 1f;
-        float _speed = 2f;
         float _stateTimer;
         float _deliverPause;
         bool _standRequested;
         bool _dismissPending;
+        bool _destinationSet;
         readonly Dictionary<string, int> _carried = new();
 
         void Awake()
         {
-            _cc = GetComponent<CharacterController>();
+            _agent = GetComponent<NavMeshAgent>();
             if (_anim == null) _anim = GetComponentInChildren<NpcAnimationController>();
             NpcRegistry.Register(this);
         }
 
         void Start()
         {
-            if (Def != null) _speed = Def.BaseSpeed;
+            if (Def != null) _agent.speed = Def.BaseSpeed;
+            _agent.angularSpeed = 540f;
+            _agent.acceleration = 12f;
+            _agent.stoppingDistance = ArrivalThreshold;
+            _agent.autoBraking = true;
+
             if (_anim != null) _anim.StateFinished += OnAnimStateFinished;
             if (AssignedBuilding != null)
             {
@@ -102,19 +105,25 @@ namespace AnimeEmpire.Entities
             }
         }
 
-        void FixedUpdate()
+        void Update()
         {
-            float dt = Time.fixedDeltaTime;
             switch (_state)
             {
                 case NpcState.Idle: break;
-                case NpcState.Move: if (WalkToward(dt)) EnterState(NpcState.WorkSit); break;
-                case NpcState.WorkSit: ProcessSit(dt); break;
-                case NpcState.WorkGather: ProcessGather(dt); break;
-                case NpcState.WorkStand: ProcessStand(dt); break;
-                case NpcState.Carry: if (WalkToward(dt)) EnterState(NpcState.Deliver); break;
-                case NpcState.Deliver: ProcessDeliver(dt); break;
-                case NpcState.Return: ProcessReturn(dt); break;
+                case NpcState.Move: if (WalkToward()) EnterState(NpcState.WorkSit); break;
+                case NpcState.WorkSit: ProcessSit(Time.deltaTime); break;
+                case NpcState.WorkGather: ProcessGather(Time.deltaTime); break;
+                case NpcState.WorkStand: ProcessStand(Time.deltaTime); break;
+                case NpcState.Carry: if (WalkToward()) EnterState(NpcState.Deliver); break;
+                case NpcState.Deliver: ProcessDeliver(Time.deltaTime); break;
+                case NpcState.Return: ProcessReturn(); break;
+            }
+
+            // Drive Animator Speed parameter from agent velocity.
+            if (_anim != null)
+            {
+                float maxSpeed = Mathf.Max(_agent.speed, 0.0001f);
+                _anim.UpdateSpeed(_agent.velocity.magnitude / maxSpeed);
             }
         }
 
@@ -152,10 +161,10 @@ namespace AnimeEmpire.Entities
             if (_deliverPause <= 0f) EnterState(NpcState.Return);
         }
 
-        void ProcessReturn(float dt)
+        void ProcessReturn()
         {
             if (AssignedBuilding == null) { EnterState(NpcState.Idle); return; }
-            if (WalkToward(dt))
+            if (WalkToward())
                 EnterState(_dismissPending ? NpcState.Idle : NpcState.WorkSit);
         }
 
@@ -165,68 +174,95 @@ namespace AnimeEmpire.Entities
             switch (s)
             {
                 case NpcState.Idle:
-                    _velocity = Vector3.zero;
+                    StopAgent();
                     _standRequested = false;
                     _carried.Clear();
                     _dismissPending = false;
+                    _anim?.SetCarrying(false);
                     _anim?.ClearOverride();
-                    _anim?.UpdateSpeed(0f);
+                    break;
+                case NpcState.Move:
+                    SetDestination(_workPos);
                     break;
                 case NpcState.WorkSit:
-                    _velocity = Vector3.zero;
+                    StopAgent();
                     _standRequested = false;
                     _stateTimer = 0f;
-                    _anim?.Override(PlayerAnimationController.StateWorkSit);
+                    _anim?.Trigger(PlayerAnimationController.StateWorkSit);
                     break;
                 case NpcState.WorkGather:
-                    _velocity = Vector3.zero;
+                    StopAgent();
                     _stateTimer = 0f;
                     if (AssignedBuilding != null && AssignedBuilding.Def != null)
                     {
                         float eff = Def != null ? Mathf.Max(0.01f, Def.BaseEfficiency) : 0.75f;
                         _workDuration = AssignedBuilding.Def.BaseCycleSeconds / eff;
                     }
-                    _anim?.Override(PlayerAnimationController.StateWorkGather);
+                    _anim?.Trigger(PlayerAnimationController.StateWorkGather);
                     break;
                 case NpcState.WorkStand:
-                    _velocity = Vector3.zero;
+                    StopAgent();
                     _stateTimer = 0f;
-                    _anim?.Override(PlayerAnimationController.StateWorkStand);
+                    _anim?.SetCarrying(CarriedTotal() > 0);
+                    _anim?.Trigger(PlayerAnimationController.StateWorkStand);
                     break;
                 case NpcState.Carry:
-                    _velocity = Vector3.zero;
-                    _targetPos = _storageTarget != null
+                    var carryTarget = _storageTarget != null
                         ? _storageTarget.transform.position + StorageArrivalOffset
                         : transform.position;
-                    _anim?.Override(PlayerAnimationController.StateCarryWalk);
+                    SetDestination(carryTarget);
+                    _anim?.SetCarrying(true);
                     break;
                 case NpcState.Deliver:
-                    _velocity = Vector3.zero;
+                    StopAgent();
                     _deliverPause = DeliverDuration;
                     DepositCarried();
+                    _anim?.SetCarrying(false);
                     _anim?.ClearOverride();
-                    _anim?.UpdateSpeed(0f);
                     break;
                 case NpcState.Return:
-                    _targetPos = _workPos;
+                    SetDestination(_workPos);
                     _anim?.ClearOverride();
                     break;
             }
         }
 
-        bool WalkToward(float dt)
+        void SetDestination(Vector3 pos)
         {
-            Vector3 to = _targetPos - transform.position;
-            to.y = 0f;
-            if (to.magnitude < ArrivalThreshold) { _velocity = Vector3.zero; return true; }
-            Vector3 dir = to.normalized;
-            Vector3 target = dir * _speed;
-            _velocity = Vector3.Lerp(_velocity, target, Mathf.Clamp01(AccelLerp * dt));
-            _cc.Move((_velocity + Physics.gravity) * dt);
-            var look = Quaternion.LookRotation(dir, Vector3.up);
-            transform.rotation = Quaternion.Slerp(transform.rotation, look, Mathf.Clamp01(RotateLerp * dt));
-            _anim?.UpdateSpeed(_velocity.magnitude / Mathf.Max(_speed, 0.0001f));
-            return false;
+            _targetPos = pos;
+            if (_agent.isOnNavMesh)
+            {
+                _agent.isStopped = false;
+                _agent.SetDestination(pos);
+                _destinationSet = true;
+            }
+            else
+            {
+                _destinationSet = false;
+            }
+        }
+
+        void StopAgent()
+        {
+            _destinationSet = false;
+            if (_agent.isOnNavMesh)
+            {
+                _agent.ResetPath();
+                _agent.isStopped = true;
+            }
+        }
+
+        bool WalkToward()
+        {
+            if (!_agent.isOnNavMesh) return false;
+            if (!_destinationSet)
+            {
+                _agent.SetDestination(_targetPos);
+                _destinationSet = true;
+                return false;
+            }
+            if (_agent.pathPending) return false;
+            return _agent.remainingDistance <= _agent.stoppingDistance + 0.05f && _agent.velocity.sqrMagnitude < 0.01f;
         }
 
         void AccumulateCarried()
@@ -265,7 +301,6 @@ namespace AnimeEmpire.Entities
                 case PlayerAnimationController.StateWorkGather:
                     if (_state != NpcState.WorkGather) return;
                     if (_standRequested) EnterState(NpcState.WorkStand);
-                    else _anim?.Override(PlayerAnimationController.StateWorkGather);
                     break;
                 case PlayerAnimationController.StateWorkStand:
                     if (_state != NpcState.WorkStand) return;

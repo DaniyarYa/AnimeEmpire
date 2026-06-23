@@ -11,9 +11,11 @@ namespace AnimeEmpire.UI
     public class WorldController : MonoBehaviour
     {
         const float FloatingTextCooldown = 0.6f;
+        // ASCII labels — default TMP font (LiberationSans) has no emoji glyphs.
+        // Phase 2: replace w/ TMP Sprite Asset (icon images) via WorldController.
         static readonly Dictionary<string, string> ResourceIcon = new()
         {
-            { "wheat", "🌾" }, { "flour", "🌾→" }, { "bread", "🍞" },
+            { "wheat", "wheat" }, { "flour", "flour" }, { "bread", "bread" },
         };
 
         [SerializeField] Player _player;
@@ -102,9 +104,9 @@ namespace AnimeEmpire.UI
         {
             var econ = EconomySim.Instance;
             if (econ == null) return;
-            if (_goldLabel != null) _goldLabel.text = $"💰 {econ.GetGold()}";
+            if (_goldLabel != null) _goldLabel.text = $"Gold: {econ.GetGold()}";
             if (_inventoryLabel != null)
-                _inventoryLabel.text = $"🌾 {econ.GetInventory("wheat")}   🌾→ {econ.GetInventory("flour")}   🍞 {econ.GetInventory("bread")}";
+                _inventoryLabel.text = $"Wheat: {econ.GetInventory("wheat")}   Flour: {econ.GetInventory("flour")}   Bread: {econ.GetInventory("bread")}";
         }
     }
 }

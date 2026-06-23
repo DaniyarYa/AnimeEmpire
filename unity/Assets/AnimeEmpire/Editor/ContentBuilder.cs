@@ -530,7 +530,7 @@ namespace AnimeEmpire.Editor
             var pm = root.AddComponent<PauseMenu>();
 
             // Open button: top-right gear.
-            var openBtn = MakeButton(root.transform, "OpenButton", new Vector2(0.95f, 0.86f), new Vector2(0.995f, 0.97f), "⚙");
+            var openBtn = MakeButton(root.transform, "OpenButton", new Vector2(0.95f, 0.86f), new Vector2(0.995f, 0.97f), "≡");
 
             // Modal root (hidden by default — PauseMenu.Awake disables).
             var modal = new GameObject("ModalRoot");
@@ -702,9 +702,9 @@ namespace AnimeEmpire.Editor
             topBg.color = new Color(0, 0, 0, 0.45f);
 
             var gold = MakeText(topBar.transform, "GoldLabel", new Vector2(0.02f, 0f), new Vector2(0.5f, 1f), 36);
-            gold.text = "💰 0"; gold.alignment = TextAlignmentOptions.MidlineLeft;
+            gold.text = "Gold: 0"; gold.alignment = TextAlignmentOptions.MidlineLeft;
             var inv = MakeText(topBar.transform, "InventoryLabel", new Vector2(0.5f, 0f), new Vector2(0.98f, 1f), 32);
-            inv.text = "🌾 0   🌾→ 0   🍞 0"; inv.alignment = TextAlignmentOptions.MidlineRight;
+            inv.text = "Wheat: 0   Flour: 0   Bread: 0"; inv.alignment = TextAlignmentOptions.MidlineRight;
 
             // VirtualJoystick
             var joystick = new GameObject("VirtualJoystick");

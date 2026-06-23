@@ -1,0 +1,201 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &3280474935923678152
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 778630135234321464}
+  - component: {fileID: 1703901545932272522}
+  - component: {fileID: 5963593457427650907}
+  - component: {fileID: 1334160594600695364}
+  - component: {fileID: 4610848622702254977}
+  - component: {fileID: 1213121826035512887}
+  - component: {fileID: 4685798286133595972}
+  - component: {fileID: 4626776234154075463}
+  - component: {fileID: 6404311574856614277}
+  - component: {fileID: 5691089679378745452}
+  - component: {fileID: 8720561700923347557}
+  - component: {fileID: 4716547707190700812}
+  - component: {fileID: 3016361631852728584}
+  m_Layer: 0
+  m_Name: Bootstrap
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &778630135234321464
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3280474935923678152}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1703901545932272522
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3280474935923678152}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: def2236a77079477db80f4105bec28e8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: AnimeEmpire.Runtime::AnimeEmpire.Core.GameState
+  CurrentScreen: boot
+  SessionStartTime: 0
+  IsTutorialActive: 0
+  CurrentPrestigeLevel: 0
+  CurrentRegion: village
+  SessionId: 
+  UserId: 
+  CountryCode: 
+--- !u!114 &5963593457427650907
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3280474935923678152}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fd528806eaadb49bf82b7f401bfb6469, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: AnimeEmpire.Runtime::AnimeEmpire.Core.Localization
+--- !u!114 &1334160594600695364
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3280474935923678152}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a49be639b8b0b4ab68de4cc1f96b08ac, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: AnimeEmpire.Runtime::AnimeEmpire.Backend.RemoteConfig
+--- !u!114 &4610848622702254977
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3280474935923678152}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b13d7561695f84405842dbf586d32d16, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: AnimeEmpire.Runtime::AnimeEmpire.Backend.SaveService
+--- !u!114 &1213121826035512887
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3280474935923678152}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 39d5d0e107fad469a901c3d9ae8197ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: AnimeEmpire.Runtime::AnimeEmpire.Economy.EconomySim
+--- !u!114 &4685798286133595972
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3280474935923678152}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fedd0095637904c5f9087d2a9ae7c21a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: AnimeEmpire.Runtime::AnimeEmpire.Backend.NPCSystem
+--- !u!114 &4626776234154075463
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3280474935923678152}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 71a5c7febc6da440bba0753244951bf3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: AnimeEmpire.Runtime::AnimeEmpire.Backend.AnalyticsBus
+--- !u!114 &6404311574856614277
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3280474935923678152}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 453484520366f45678cb2115fe50c3d0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: AnimeEmpire.Runtime::AnimeEmpire.Backend.MonetizationService
+  _catalog: {fileID: 0}
+--- !u!114 &5691089679378745452
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3280474935923678152}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e77cba3569cec42148a1857281434cce, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: AnimeEmpire.Runtime::AnimeEmpire.Backend.AudioService
+  _clips: []
+  SfxVolume: 1
+  MusicVolume: 0.7
+--- !u!114 &8720561700923347557
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3280474935923678152}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1561bbe4a4065400da6567f636566dd8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: AnimeEmpire.Runtime::AnimeEmpire.Backend.NotificationService
+--- !u!114 &4716547707190700812
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3280474935923678152}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f1f1df14340f44c29b9e3a279fc0e4fb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: AnimeEmpire.Runtime::AnimeEmpire.Core.SettingsService
+--- !u!114 &3016361631852728584
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3280474935923678152}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7e80b620a88dc49938288bec3a29f88c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: AnimeEmpire.Runtime::AnimeEmpire.Core.SceneRouter

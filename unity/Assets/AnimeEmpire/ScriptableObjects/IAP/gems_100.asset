@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e48dff79aa68845228ae1d694e72cdcb, type: 3}
+  m_Name: gems_100
+  m_EditorClassIdentifier: AnimeEmpire.Runtime::AnimeEmpire.Data.IapProductDef
+  Id: gems_100
+  DisplayNameKey: iap.gems_100.name
+  Sku: com.animeempire.gems_100
+  Kind: consumable
+  FallbackPriceUsd: 0.99
+  DescriptionKey: 
+  GemGrant: 100
+  GoldGrant: 0
+  NoAdsUnlock: 0
+  BattlePassUnlock: 0

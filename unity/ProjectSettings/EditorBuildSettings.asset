@@ -4,5 +4,13 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes: []
-  m_configObjects: {}
+  m_Scenes:
+  - enabled: 1
+    path: Assets/AnimeEmpire/Scenes/Boot.unity
+    guid: 87e167e1543a1457e803165cdef1688f
+  - enabled: 1
+    path: Assets/AnimeEmpire/Scenes/World.unity
+    guid: c5b797ead48e343a995b527a2145a8ff
+  m_configObjects:
+    com.unity.addressableassets: {fileID: 11400000, guid: e52ac6a35ec514b79b324f1b3c4ad87a, type: 2}
+    com.unity.localization.settings: {fileID: 11400000, guid: 90f51a16cc0254256b497b7bb764490c, type: 2}

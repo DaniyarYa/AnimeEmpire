@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 55f220549dd784742829529c2620f33f, type: 3}
+  m_Name: wheat_farm
+  m_EditorClassIdentifier: AnimeEmpire.Runtime::AnimeEmpire.Data.BuildingDef
+  Id: wheat_farm
+  DisplayNameKey: building.wheat_farm.name
+  Category: generator
+  InputResource: {fileID: 0}
+  InputAmount: 0
+  OutputResource: {fileID: 11400000, guid: 568eee2dd3590461d919435bb09ad2e7, type: 2}
+  OutputAmount: 1
+  BaseCycleSeconds: 1
+  BaseCostGold: 100
+  CostGrowth: 1.12
+  MaxLevel: 25
+  UnlockLevel: 1
+  NpcSlots: 1

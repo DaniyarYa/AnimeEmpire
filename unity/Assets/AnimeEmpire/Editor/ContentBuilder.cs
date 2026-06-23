@@ -842,7 +842,6 @@ namespace AnimeEmpire.Editor
             var gMat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
             gMat.color = new Color(0.498f, 0.741f, 0.404f);
             ground.GetComponent<MeshRenderer>().sharedMaterial = gMat;
-            NavMeshBakeStep.MarkNavStatic(ground);
 
             GameObject Spawn(GameObject prefab, string nm, Vector3 pos)
             {
@@ -866,8 +865,9 @@ namespace AnimeEmpire.Editor
             var market = Spawn(buildingPrefab, "Market", new Vector3(6, 0, 4));
             market.GetComponent<Building>().Def = b.Market;
 
-            // Buildings carve NavMesh — bake AFTER buildings spawn but BEFORE NPC.
-            NavMeshBakeStep.Bake();
+            // NavMeshSurface on ground bakes after buildings exist so their
+            // NavMeshObstacles (carve = true) cut holes.
+            NavMeshBakeStep.AddSurfaceAndBake(ground);
 
             var player = Spawn(playerPrefab, "Player", new Vector3(0, 0, -2));
             var npc = Spawn(npcPrefab, "GathererFarmer", new Vector3(-3, 0, -2));

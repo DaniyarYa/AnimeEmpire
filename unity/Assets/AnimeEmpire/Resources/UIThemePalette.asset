@@ -20,5 +20,9 @@ MonoBehaviour:
   TextPressed: {r: 1, g: 1, b: 1, a: 1}
   TextDisabled: {r: 1, g: 1, b: 1, a: 0.6}
   PanelBg: {r: 1, g: 0.957, b: 0.878, a: 1}
-  FontSizeDefault: 16
-  FontSizeButton: 16
+  FontSizeDefault: 28
+  FontSizeButton: 32
+  FontSizeTitle: 56
+  PanelPadding: 24
+  Spacing: 16
+  ButtonMinHeight: 72

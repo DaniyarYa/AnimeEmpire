@@ -47,6 +47,10 @@ sysinfo.txt
 # Crashlytics generated file
 crashlytics-build.properties
 
+# MCP-generated screenshots
+Assets/Screenshots/
+Assets/Screenshots.meta
+
 # Firebase SDK — re-imported per dev via FirebaseSDK .unitypackages.
 # Configs stay (small + needed for builds), binaries don't (huge + regen on import).
 Assets/Firebase/
